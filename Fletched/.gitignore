@@ -72,3 +72,8 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+#Content packs
+Content/CitySampleBuildings/*
+Content/IndustryPropsPack6/*
+Content/StarterContent/*
