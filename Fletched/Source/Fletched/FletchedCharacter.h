@@ -55,6 +55,12 @@ protected:
 	/** Handles strafing movement, left and right */
 	void MoveRight(float Val);
 
+	/** Handles sprinting */
+	void Sprint();
+
+	/** Handles sprint cancel */
+	void StopSprint();
+
 	/** Handles crouching */
 	void StartCrouch();
 
@@ -86,6 +92,13 @@ protected:
 	void EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location);
 	void TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location);
 	TouchData	TouchItem;
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float WalkSpeed = 600.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float SprintSpeed = 1000.f;
 	
 protected:
 	// APawn interface

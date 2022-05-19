@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,10 +55,16 @@ void AFletchedCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	
+	// Bind sprint event
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AFletchedCharacter::Sprint);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AFletchedCharacter::StopSprint);
 
-	// Bind Crouch event
+	// Bind crouch event
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFletchedCharacter::StartCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFletchedCharacter::StopCrouch);
+
+	
 
 
 	// Bind fire event
@@ -128,6 +135,16 @@ void AFletchedCharacter::MoveRight(float Value)
 	}
 }
 
+void AFletchedCharacter::Sprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+}
+
+void AFletchedCharacter::StopSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+}
+
 void AFletchedCharacter::StartCrouch()
 {
 	ACharacter::Crouch();
@@ -137,6 +154,7 @@ void AFletchedCharacter::StopCrouch()
 {
 	ACharacter::UnCrouch();
 }
+
 
 void AFletchedCharacter::TurnAtRate(float Rate)
 {
