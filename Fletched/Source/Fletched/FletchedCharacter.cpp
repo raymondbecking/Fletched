@@ -55,6 +55,11 @@ void AFletchedCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	// Bind Crouch event
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFletchedCharacter::StartCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFletchedCharacter::StopCrouch);
+
+
 	// Bind fire event
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AFletchedCharacter::OnPrimaryAction);
 
@@ -121,6 +126,16 @@ void AFletchedCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
 	}
+}
+
+void AFletchedCharacter::StartCrouch()
+{
+	ACharacter::Crouch();
+}
+
+void AFletchedCharacter::StopCrouch()
+{
+	ACharacter::UnCrouch();
 }
 
 void AFletchedCharacter::TurnAtRate(float Rate)
