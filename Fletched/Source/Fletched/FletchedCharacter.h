@@ -67,6 +67,11 @@ protected:
 	/** Handles uncrouching */
 	void StopCrouch();
 
+	/** Handles crouching */
+	void Slide();
+
+	/** Handles uncrouching */
+	void StopSlide();
 
 	/**
 	 * Called via input to turn at a given rate.

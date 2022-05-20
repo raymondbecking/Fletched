@@ -64,7 +64,9 @@ void AFletchedCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AFletchedCharacter::StartCrouch);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFletchedCharacter::StopCrouch);
 
-	
+	// Bind slide event
+	PlayerInputComponent->BindAction("Slide", IE_Pressed, this, &AFletchedCharacter::Slide);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFletchedCharacter::StopSlide);
 
 
 	// Bind fire event
@@ -153,6 +155,25 @@ void AFletchedCharacter::StartCrouch()
 void AFletchedCharacter::StopCrouch()
 {
 	ACharacter::UnCrouch();
+}
+
+void AFletchedCharacter::Slide()
+{	
+	GetCharacterMovement()->GroundFriction = 0.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 600.f;
+	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
+	ACharacter::Crouch();
+	UE_LOG(LogTemp, Warning, TEXT("Sliding!"));
+}
+
+void AFletchedCharacter::StopSlide()
+{
+	GetCharacterMovement()->GroundFriction = 8.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 0.f;
+	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = false;
+
+	ACharacter::UnCrouch();
+	UE_LOG(LogTemp, Warning, TEXT("Stopped Sliding!"));
 }
 
 
