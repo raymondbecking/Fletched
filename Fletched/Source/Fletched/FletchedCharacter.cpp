@@ -8,6 +8,7 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,7 +36,6 @@ AFletchedCharacter::AFletchedCharacter()
 	Mesh1P->CastShadow = false;
 	Mesh1P->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
-
 }
 
 void AFletchedCharacter::BeginPlay()
@@ -139,12 +139,20 @@ void AFletchedCharacter::MoveRight(float Value)
 
 void AFletchedCharacter::Sprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+	if (GetCharacterMovement() != nullptr)
+	{
+		//Set movement speed to sprinting speed
+		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+	}
 }
 
 void AFletchedCharacter::StopSprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	if (GetCharacterMovement() != nullptr)
+	{
+		//Set movement speed to walk speed
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	}
 }
 
 void AFletchedCharacter::StartCrouch()
@@ -154,25 +162,53 @@ void AFletchedCharacter::StartCrouch()
 
 void AFletchedCharacter::StopCrouch()
 {
-	ACharacter::UnCrouch();
+	ACharacter::UnCrouch();	
 }
 
 void AFletchedCharacter::Slide()
 {	
-	GetCharacterMovement()->GroundFriction = 0.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 600.f;
-	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
+	FVector CharacterVelocity = GetCharacterMovement()->Velocity;
+	CharacterVelocity.Normalize();
+	double Direction = FVector::DotProduct(CharacterVelocity, this->GetActorForwardVector());
+	UE_LOG(LogTemp, Warning, TEXT("Velocity : %s"), *this->GetActorForwardVector().ToString());
+	UE_LOG(LogTemp, Warning, TEXT("Velocity : %s"), *CharacterVelocity.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("Velocity : %d"), Direction);
+
+	//Allow sliding if character is moving forward
+	if (GetCharacterMovement() != nullptr && Direction > 0)
+	{
+		//Sliding physics
+		GetCharacterMovement()->GroundFriction = 0.f;
+		GetCharacterMovement()->BrakingDecelerationWalking = 600.f;
+		GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
+
+		//Adjust camera roll to make it look like rolling on one side
+		DefaultRoll = GetControlRotation().Roll;
+		GetController()->SetControlRotation(GetControlRotation().Add(0, 0, SlideRotationRoll));
+	}
+
 	ACharacter::Crouch();
+
 	UE_LOG(LogTemp, Warning, TEXT("Sliding!"));
 }
 
 void AFletchedCharacter::StopSlide()
 {
-	GetCharacterMovement()->GroundFriction = 8.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 0.f;
-	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = false;
+	if (GetCharacterMovement() != nullptr)
+	{
+		//Return physics to normal
+		GetCharacterMovement()->GroundFriction = 8.f;
+		GetCharacterMovement()->BrakingDecelerationWalking = 0.f;
+		GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = false;
+
+		//Reset camera roll
+		FRotator DefaultRotation = GetControlRotation();
+		DefaultRotation.Roll = DefaultRoll;
+		GetController()->SetControlRotation(DefaultRotation);
+	}
 
 	ACharacter::UnCrouch();
+
 	UE_LOG(LogTemp, Warning, TEXT("Stopped Sliding!"));
 }
 

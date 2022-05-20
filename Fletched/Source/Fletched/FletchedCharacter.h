@@ -104,6 +104,11 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float SprintSpeed = 1000.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float SlideRotationRoll = 10.f;
+
+	double DefaultRoll = 0;
 	
 protected:
 	// APawn interface
