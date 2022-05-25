@@ -36,6 +36,15 @@ AFletchedCharacter::AFletchedCharacter()
 	Mesh1P->CastShadow = false;
 	Mesh1P->SetRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
+
+	if (GetCharacterMovement() != nullptr)
+	{
+		DefaultFriction = GetCharacterMovement()->GroundFriction;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Warning! CharacterMovement does NOT exist on this Character!"))
+	}
 }
 
 void AFletchedCharacter::BeginPlay()
@@ -53,8 +62,8 @@ void AFletchedCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	check(PlayerInputComponent);
 
 	// Bind jump events
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AFletchedCharacter::ActivateJump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &AFletchedCharacter::DeactivateJump);
 	
 	// Bind sprint event
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AFletchedCharacter::Sprint);
@@ -137,27 +146,42 @@ void AFletchedCharacter::MoveRight(float Value)
 	}
 }
 
+/** Overridden CanJumpInternal to not disallow jumping from crouched state */
+bool AFletchedCharacter::CanJumpInternal_Implementation() const
+{
+	return JumpIsAllowedInternal();
+}
+
+void AFletchedCharacter::ActivateJump()
+{
+	//Stop slide (and thus the Crouch state) to allow jumping from a crouched position, i.e. sliding and crouching
+	AFletchedCharacter::StopSlide();
+	GetCharacterMovement()->bWantsToCrouch = false;
+
+	ACharacter::Jump();
+}
+
+void AFletchedCharacter::DeactivateJump()
+{
+	ACharacter::StopJumping();
+}
+
 void AFletchedCharacter::Sprint()
 {
-	if (GetCharacterMovement() != nullptr)
-	{
-		//Set movement speed to sprinting speed
-		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
-	}
+	//Set movement speed to sprinting speed
+	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
 }
 
 void AFletchedCharacter::StopSprint()
-{
-	if (GetCharacterMovement() != nullptr)
-	{
-		//Set movement speed to walk speed
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	}
+{	
+	//Set movement speed to walk speed
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;	
 }
 
 void AFletchedCharacter::StartCrouch()
 {
 	ACharacter::Crouch();
+	UE_LOG(LogTemp, Warning, TEXT("Moving Direction : %s"), (ACharacter::CanJump() ? TEXT("true") : TEXT("false")) );
 }
 
 void AFletchedCharacter::StopCrouch()
@@ -167,50 +191,54 @@ void AFletchedCharacter::StopCrouch()
 
 void AFletchedCharacter::Slide()
 {	
+	//Directional velocity of the character
 	FVector CharacterVelocity = GetCharacterMovement()->Velocity;
 	CharacterVelocity.Normalize();
-	double Direction = FVector::DotProduct(CharacterVelocity, this->GetActorForwardVector());
-	UE_LOG(LogTemp, Warning, TEXT("Velocity : %s"), *this->GetActorForwardVector().ToString());
-	UE_LOG(LogTemp, Warning, TEXT("Velocity : %s"), *CharacterVelocity.ToString());
-	UE_LOG(LogTemp, Warning, TEXT("Velocity : %d"), Direction);
+
+	//Dot product of the Directional Velocity and the Characters rotation to calculate the characters moving direction (forward/backward)
+	float CharacterDirection = FVector::DotProduct(CharacterVelocity, this->GetActorForwardVector());
+	UE_LOG(LogTemp, Warning, TEXT("Moving Direction : %f"), CharacterDirection);
 
 	//Allow sliding if character is moving forward
-	if (GetCharacterMovement() != nullptr && Direction > 0)
+	if (CharacterDirection > 0)
 	{
 		//Sliding physics
 		GetCharacterMovement()->GroundFriction = 0.f;
-		GetCharacterMovement()->BrakingDecelerationWalking = 600.f;
+		GetCharacterMovement()->BrakingDecelerationWalking = SlideDecelerationSpeed;
 		GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = true;
 
-		//Adjust camera roll to make it look like rolling on one side
-		DefaultRoll = GetControlRotation().Roll;
-		GetController()->SetControlRotation(GetControlRotation().Add(0, 0, SlideRotationRoll));
+		//Event that adjusts camera roll to make it look like sliding on one side
+		if (StartCameraTilt.IsBound())
+		{
+			//Trigger Start Camera Tilt Event 
+			StartCameraTilt.Broadcast();
+		}
 	}
-
 	ACharacter::Crouch();
-
 	UE_LOG(LogTemp, Warning, TEXT("Sliding!"));
 }
 
 void AFletchedCharacter::StopSlide()
 {
-	if (GetCharacterMovement() != nullptr)
-	{
-		//Return physics to normal
-		GetCharacterMovement()->GroundFriction = 8.f;
-		GetCharacterMovement()->BrakingDecelerationWalking = 0.f;
-		GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = false;
+	//Return physics to normal
+	GetCharacterMovement()->GroundFriction = DefaultFriction;
+	GetCharacterMovement()->BrakingDecelerationWalking = 0.f;
+	GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = false;
 
-		//Reset camera roll
-		FRotator DefaultRotation = GetControlRotation();
-		DefaultRotation.Roll = DefaultRoll;
-		GetController()->SetControlRotation(DefaultRotation);
+	if (StopCameraTilt.IsBound())
+	{
+		//Trigger Stop Camera Tilt Event
+		StopCameraTilt.Broadcast();
 	}
+	
 
 	ACharacter::UnCrouch();
 
 	UE_LOG(LogTemp, Warning, TEXT("Stopped Sliding!"));
 }
+
+//character can now jump from a crouched position (crouching & sliding)
+
 
 
 void AFletchedCharacter::TurnAtRate(float Rate)

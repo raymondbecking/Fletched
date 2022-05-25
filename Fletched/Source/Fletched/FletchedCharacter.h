@@ -16,6 +16,9 @@ class USoundBase;
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUseItem);
+// Declaration of the delegate that will be called when Slide is triggered
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCameraTilt);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCameraTilt);
 
 UCLASS(config=Game)
 class AFletchedCharacter : public ACharacter
@@ -44,6 +47,15 @@ public:
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnUseItem OnUseItem;
+
+	/** Delegate to whom anyone can subscribe to receive this event */
+	UPROPERTY(BlueprintAssignable, Category = "Slide")
+	FStartCameraTilt StartCameraTilt;
+
+	/** Delegate to whom anyone can subscribe to receive this event */
+	UPROPERTY(BlueprintAssignable, Category = "Slide")
+	FStopCameraTilt StopCameraTilt;
+
 protected:
 	
 	/** Fires a projectile. */
@@ -54,6 +66,12 @@ protected:
 
 	/** Handles strafing movement, left and right */
 	void MoveRight(float Val);
+
+	/** Handles Jumping */
+	void ActivateJump();
+
+	/** Handles Jump cancel */
+	void DeactivateJump();
 
 	/** Handles sprinting */
 	void Sprint();
@@ -67,10 +85,10 @@ protected:
 	/** Handles uncrouching */
 	void StopCrouch();
 
-	/** Handles crouching */
+	/** Handles sliding */
 	void Slide();
 
-	/** Handles uncrouching */
+	/** Handles slide cancel */
 	void StopSlide();
 
 	/**
@@ -106,14 +124,24 @@ private:
 	float SprintSpeed = 1000.f;
 
 	UPROPERTY(EditDefaultsOnly)
+	float SlideDecelerationSpeed = 600.f;
+
+	UPROPERTY(EditDefaultsOnly)
 	float SlideRotationRoll = 10.f;
 
 	double DefaultRoll = 0;
+
+	float DefaultFriction;
+
+
 	
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
+
+	/** Overrides CanJump implementation */
+	virtual bool CanJumpInternal_Implementation() const override;
 
 	/* 
 	 * Configures input for touchscreen devices if there is a valid touch interface for doing so 
