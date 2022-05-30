@@ -1,7 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+/*  This component calculates the actual size in meters of this object using mesh bounds and object scale
+	This component displays the size of the object as text above it    
+	*/
 
 #include "GameFramework/Actor.h"
+#include "Kismet/KismetTextLibrary.h"
 #include "ObjectSizeComponent.h"
 
 // Sets default values for this component's properties
@@ -9,12 +13,7 @@ UObjectSizeComponent::UObjectSizeComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-
-
-	
-
-	
+	PrimaryComponentTick.bCanEverTick = true;	
 }
 
 
@@ -31,16 +30,44 @@ void UObjectSizeComponent::BeginPlay()
 
 		if (SizeText)
 		{
+			//Register and attach TextRender to the root of the object this component attached
 			SizeText->RegisterComponent();
 			SizeText->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 			SizeText->CreationMethod = EComponentCreationMethod::Instance;
 
-			//FVector ObjectTop = FVector(0, 0, 10);//GetOwner()->StaticMesh
-			//SizeText->AddLocalOffset(ObjectTop);
 
-			SizeText->SetTextRenderColor(FColor::Green);
-			SizeText->SetText(FText::FromString("Test"));
-			UE_LOG(LogTemp, Warning, TEXT("Success: %s"), *GetOwner()->GetRootComponent()->GetName());
+			TArray<UStaticMeshComponent*> MeshComponents;
+			GetOwner()->GetComponents<UStaticMeshComponent>(MeshComponents);
+			if(MeshComponents.Num() != 1)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Multiple StaticMeshes not supported, using RootComponent StaticMesh"));
+			}
+
+
+			
+			//Calculate The size of the object
+			FVector ObjectScale = GetOwner()->GetActorScale();
+			FVector MeshSize = 2 * MeshComponents[0]->GetStaticMesh()->GetBounds().BoxExtent;
+			FVector ObjectDimensions = MeshSize * ObjectScale;
+
+			//Reposition Text based on object dimensions
+			FVector ObjectTop = FVector(0, 0, MeshSize.Z);
+			SizeText->AddLocalOffset(ObjectTop);
+
+			FString DimensionText = "";	
+
+			FString XSizeText = "X:" + FString::SanitizeFloat(ObjectDimensions.X) + "cm ";
+			DimensionText = DimensionText + (bShowXSize ? XSizeText : "");
+
+			FString YSizeText = "Y:" + FString::SanitizeFloat(ObjectDimensions.Y) + "cm ";
+			DimensionText = DimensionText + (bShowYSize ? YSizeText : "");
+
+			FString ZSizeText = "Z:" + FString::SanitizeFloat(ObjectDimensions.Z) + "cm ";
+			DimensionText = DimensionText + (bShowZSize ? ZSizeText : "");
+
+			SizeText->SetTextRenderColor(FColor::Blue);
+			SizeText->SetText(FText::FromString(*DimensionText));
+			//UE_LOG(LogTemp, Warning, TEXT("Scale: %s"), *DimensionText);
 		}
 
 	}

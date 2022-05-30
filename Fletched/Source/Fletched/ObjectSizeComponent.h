@@ -27,6 +27,15 @@ private:
 	/*UPROPERTY(EditDefaultsOnly)
 	float TextOffset;*/
 
+	UPROPERTY(EditAnywhere)
+	bool bShowXSize = false;
+
+	UPROPERTY(EditAnywhere)
+	bool bShowYSize = false;
+
+	UPROPERTY(EditAnywhere)
+	bool bShowZSize = false;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
