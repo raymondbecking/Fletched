@@ -4,9 +4,9 @@
 	This component displays the size of the object as text above it
 	*/
 
+#include "NameTagComponent.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/KismetTextLibrary.h"
-#include "NameTagComponent.h"
 
 	// Sets default values for this component's properties
 UNameTagComponent::UNameTagComponent()
@@ -14,6 +14,9 @@ UNameTagComponent::UNameTagComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+
+	//Name Tag defaults
+	NameTagColor = FColor::FromHex("BCFFDAFF");
 }
 
 
@@ -26,7 +29,7 @@ void UNameTagComponent::BeginPlay()
 	if (GetOwner() != nullptr)
 	{
 		FString ObjectName = "TextComponent";
-		CreateNameTagObject(ObjectName, NameTagText, NameTagColor);
+		CreateNameTagObject(ObjectName, NameTagText, NameTagColor, NameTagOffset);
 			
 		//TODO: could be useful later
 		//Calculate the center of the mesh adjusted by object scale
@@ -44,7 +47,7 @@ void UNameTagComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	// ...
 }
 
-void UNameTagComponent::CreateNameTagObject(FString& ObjectName, FString &Text, FColor &Color)
+void UNameTagComponent::CreateNameTagObject(FString& ObjectName, FString &Text, FColor &Color, FVector& PositionOffset)
 {
 	NameTagObject = NewObject<UTextRenderComponent>(this, UTextRenderComponent::StaticClass(), *ObjectName);
 
@@ -55,13 +58,13 @@ void UNameTagComponent::CreateNameTagObject(FString& ObjectName, FString &Text, 
 		NameTagObject->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, true));
 		NameTagObject->CreationMethod = EComponentCreationMethod::Instance;
 
-		SetNameTagPosition();
-
+		
+		SetNameTagPosition(PositionOffset);
 		SetNameTag(Text, Color);
 	}
 }
 
-void UNameTagComponent::SetNameTagPosition()
+void UNameTagComponent::SetNameTagPosition(FVector &PositionOffset)
 {
 	//Get static mesh
 	TArray<UStaticMeshComponent*> MeshComponents;
@@ -76,9 +79,18 @@ void UNameTagComponent::SetNameTagPosition()
 	FVector MaxBounds;
 	MeshComponents[0]->GetLocalBounds(MinBounds, MaxBounds);
 
-	//Reposition Text based on object dimensions
-	FVector ObjectTop = FVector(0, 0, MaxBounds.Z);
-	NameTagObject->AddLocalOffset(ObjectTop);
+
+	//Where the Name Tag should be positioned based on the mesh
+	FVector NameTagPosition = FVector(0, 0, MaxBounds.Z);
+
+	//Make sure offset isn't affected by actor scale
+	PositionOffset = PositionOffset / GetOwner()->GetActorScale();
+
+	//Reposition Text based on object bounds and offset
+	NameTagObject->AddLocalOffset(NameTagPosition + PositionOffset);
+
+	//Set text alignment to center
+	NameTagObject->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 }
 
 void UNameTagComponent::SetNameTag(FString &Text, FColor &Color)
@@ -88,6 +100,7 @@ void UNameTagComponent::SetNameTag(FString &Text, FColor &Color)
 
 	//Set NameTag Text
 	NameTagObject->SetText(FText::FromString(Text));
+
 }
 
 

@@ -24,23 +24,27 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	virtual void CreateNameTagObject(FString& ObjectName, FString& NameTagText, FColor& Color);
+	virtual void CreateNameTagObject(FString& ObjectName, FString& NameTagText, FColor& Color, FVector& PositionOffset);
 
-	virtual void SetNameTagPosition();
+	virtual void SetNameTagPosition(FVector& Offset);
 
 	virtual void SetNameTag(FString& Text, FColor& Color);
+
+	//NameTag can be set in editor or accessed in child classes
+	UPROPERTY(EditAnywhere)
+	FString NameTagText;
+
+	//Color can be set in editor or accessed in child classes
+	UPROPERTY(EditAnywhere)
+	FColor NameTagColor;
+
+	UPROPERTY(EditAnywhere)
+	FVector NameTagOffset = FVector(0, 0, 20);
 
 private:
 	/*UPROPERTY(EditDefaultsOnly)
 	float TextOffset;*/
 
-	//NameTag can be set in editor or accessed in child classes
-	UPROPERTY(EditAnywhere)
-	FString NameTagText = "";
-
-	//Color can be set in editor or accessed in child classes
-	UPROPERTY(EditAnywhere)
-	FColor NameTagColor = FColor::FromHex("BCFFDAFF");
 
 public:
 	// Called every frame
