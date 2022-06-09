@@ -5,6 +5,9 @@
 	*/
 
 #include "NameTagComponent.h"
+#include "TextWidget.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/KismetTextLibrary.h"
 
@@ -14,6 +17,19 @@ UNameTagComponent::UNameTagComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
+
+	NameTagWidget = CreateDefaultSubobject<UWidgetComponent>("NameTagWidget");
+
+	//Use NameTagWidget BP as the name tag template
+	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetObject(TEXT("/Game/Fletched/Widgets/WBP_NameTagWidget"));
+	if (WidgetObject.Succeeded())
+	{		
+		TextWidgetClass = WidgetObject.Class;
+	}
+	else
+	{
+		TextWidgetClass = nullptr;
+	}
 
 	//Name Tag defaults
 	NameTagColor = FColor::FromHex("BCFFDAFF");
@@ -28,13 +44,16 @@ void UNameTagComponent::BeginPlay()
 	//Check if this component is attached to something
 	if (GetOwner() != nullptr)
 	{
-		FString ObjectName = "TextComponent";
-		CreateNameTagObject(ObjectName, NameTagText, NameTagColor, NameTagOffset);
+		if(NameTagWidget != nullptr)
+		{
+			CreateNameTagWidget();
+			SetNameTagText(NameTagText, NameTagColor);
+			SetNameTagPosition(NameTagOffset);
+		}
 			
 		//TODO: could be useful later
 		//Calculate the center of the mesh adjusted by object scale
-		//FVector MeshCenter = ObjectScale * (FVector((MaxBounds.X + MinBounds.X), (MaxBounds.Y + MinBounds.Y), (MaxBounds.Z + MinBounds.Z)) / 2);	
-
+		//FVector MeshCenter = ObjectScale * (FVector((MaxBounds.X + MinBounds.X), (MaxBounds.Y + MinBounds.Y), (MaxBounds.Z + MinBounds.Z)) / 2);
 	}
 
 }
@@ -47,26 +66,33 @@ void UNameTagComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	// ...
 }
 
-void UNameTagComponent::CreateNameTagObject(FString& ObjectName, FString &Text, FColor &Color, FVector& PositionOffset)
+/* Setup and creation of the NameTagWidget
+ */
+void UNameTagComponent::CreateNameTagWidget()
 {
-	NameTagObject = NewObject<UTextRenderComponent>(this, UTextRenderComponent::StaticClass(), *ObjectName);
+	//Widget Setup
+	NameTagWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	NameTagWidget->SetWidgetClass(TextWidgetClass);
+	NameTagWidget->SetDrawSize(FVector2D(700.0f, 30.0f));
+	NameTagWidget->SetVisibility(true);
 
-	if (NameTagObject)
-	{
-		//Register and attach TextRender to the root of the object this component attached
-		NameTagObject->RegisterComponent();
-		NameTagObject->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, true));
-		NameTagObject->CreationMethod = EComponentCreationMethod::Instance;
-
-		
-		SetNameTagPosition(PositionOffset);
-		SetNameTag(Text, Color);
-	}
+	//Register and attach widget to where this NameTagComponent is attached to
+	NameTagWidget->RegisterComponent();
+	NameTagWidget->AttachToComponent(GetOwner()->GetRootComponent(),
+	                            FAttachmentTransformRules::FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
+		                            EAttachmentRule::KeepWorld,
+		                            EAttachmentRule::KeepWorld,
+		                            true));
+	NameTagWidget->CreationMethod = EComponentCreationMethod::Instance;
 }
 
+/* This function calculates the topside of the mesh this component is attached to
+ * and then sets the Name Tag Widget to this position taking the editor defined
+ * offset in consideration.
+ */
 void UNameTagComponent::SetNameTagPosition(FVector &PositionOffset)
 {
-	//Get static mesh
+	//Get the owner static mesh where this component is attached to
 	TArray<UStaticMeshComponent*> MeshComponents;
 	GetOwner()->GetComponents<UStaticMeshComponent>(MeshComponents);
 	if (MeshComponents.Num() != 1)
@@ -74,32 +100,31 @@ void UNameTagComponent::SetNameTagPosition(FVector &PositionOffset)
 		UE_LOG(LogTemp, Warning, TEXT("Multiple StaticMeshes not supported, using RootComponent StaticMesh"));
 	}
 
-	//Get the Bounds of the mesh
+	//Get the Bounds of the static mesh
 	FVector MinBounds;
 	FVector MaxBounds;
 	MeshComponents[0]->GetLocalBounds(MinBounds, MaxBounds);
-
-
-	//Where the Name Tag should be positioned based on the mesh
+	
+	//Where the Name Tag should be positioned based on the static mesh
 	FVector NameTagPosition = FVector(0, 0, MaxBounds.Z);
 
 	//Make sure offset isn't affected by actor scale
 	PositionOffset = PositionOffset / GetOwner()->GetActorScale();
 
-	//Reposition Text based on object bounds and offset
-	NameTagObject->AddLocalOffset(NameTagPosition + PositionOffset);
-
-	//Set text alignment to center
-	NameTagObject->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
+	//Reposition Text based on object bounds and the offset
+	NameTagWidget->AddLocalOffset(NameTagPosition + PositionOffset);
 }
 
-void UNameTagComponent::SetNameTag(FString &Text, FColor &Color)
+void UNameTagComponent::SetNameTagText(FString &Text, FColor &Color)
 {
+	//ChangeNameTag.Broadcast(Text);
+
 	//Set NameTag Text Color
-	NameTagObject->SetTextRenderColor(Color);
+	//NameTagWidget->SetTextRenderColor(Color);
 
 	//Set NameTag Text
-	NameTagObject->SetText(FText::FromString(Text));
+	//NameTagWidget->SetText(FText::FromString(Text));
+
 
 }
 
