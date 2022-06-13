@@ -19,18 +19,18 @@ UNameTagComponent::UNameTagComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	NameTagWidget = CreateDefaultSubobject<UWidgetComponent>("NameTagWidget");
-
-	//Use NameTagWidget BP as the name tag template
-	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetObject(TEXT("/Game/Fletched/Widgets/WBP_NameTagWidget"));
+	
+	//Use WBP_TextWidget as template for the Name Tag
+	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetObject(TEXT("/Game/Fletched/Widgets/WBP_TextWidget"));
 	if (WidgetObject.Succeeded())
 	{		
-		TextWidgetClass = WidgetObject.Class;
+		TextWidgetClass = WidgetObject.Class;		
 	}
 	else
 	{
 		TextWidgetClass = nullptr;
 	}
-
+	
 	//Name Tag defaults
 	NameTagColor = FColor::FromHex("BCFFDAFF");
 }
@@ -43,11 +43,11 @@ void UNameTagComponent::BeginPlay()
 
 	//Check if this component is attached to something
 	if (GetOwner() != nullptr)
-	{
+	{		
 		if(NameTagWidget != nullptr)
 		{
 			CreateNameTagWidget();
-			SetNameTagText(NameTagText, NameTagColor);
+			SetNameTagText(NameTagText, NameTagColor);			
 			SetNameTagPosition(NameTagOffset);
 		}
 			
@@ -62,8 +62,6 @@ void UNameTagComponent::BeginPlay()
 void UNameTagComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
 }
 
 /* Setup and creation of the NameTagWidget
@@ -95,14 +93,21 @@ void UNameTagComponent::SetNameTagPosition(FVector &PositionOffset)
 	//Get the owner static mesh where this component is attached to
 	TArray<UStaticMeshComponent*> MeshComponents;
 	GetOwner()->GetComponents<UStaticMeshComponent>(MeshComponents);
+
+	if (MeshComponents.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s does not have a static mesh attached!"), *GetOwner()->GetName());		
+		return;
+	}
 	if (MeshComponents.Num() != 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Multiple StaticMeshes not supported, using RootComponent StaticMesh"));
 	}
-
-	//Get the Bounds of the static mesh
+	
+	//Out vectors for the bounds of the static mesh
 	FVector MinBounds;
-	FVector MaxBounds;
+	FVector MaxBounds;	
+	
 	MeshComponents[0]->GetLocalBounds(MinBounds, MaxBounds);
 	
 	//Where the Name Tag should be positioned based on the static mesh
@@ -115,17 +120,17 @@ void UNameTagComponent::SetNameTagPosition(FVector &PositionOffset)
 	NameTagWidget->AddLocalOffset(NameTagPosition + PositionOffset);
 }
 
-void UNameTagComponent::SetNameTagText(FString &Text, FColor &Color)
+void UNameTagComponent::SetNameTagText(FText &Text, FColor &Color)
 {
-	//ChangeNameTag.Broadcast(Text);
+	NameTagWidget->InitWidget();
+	if(NameTagWidget->GetUserWidgetObject() != nullptr)
+	{
+		//Cast to the parent class of the Widget BP
+		NameTagTextWidget = Cast<UTextWidget>(NameTagWidget->GetUserWidgetObject());		
+		NameTagTextWidget->SetValue(Text);
+	}		
 
 	//Set NameTag Text Color
-	//NameTagWidget->SetTextRenderColor(Color);
-
-	//Set NameTag Text
-	//NameTagWidget->SetText(FText::FromString(Text));
-
-
 }
 
 

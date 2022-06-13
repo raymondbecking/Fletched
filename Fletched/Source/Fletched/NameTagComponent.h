@@ -4,10 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Components/TextRenderComponent.h"
 #include "NameTagComponent.generated.h"
 
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangeNameTag, FString, NameTagText);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FLETCHED_API UNameTagComponent : public UActorComponent
@@ -18,11 +16,6 @@ public:
 	// Sets default values for this component's properties
 	UNameTagComponent();
 
-	//Text component to be attached to the owner
-	UPROPERTY()
-	UTextRenderComponent* NameTagObject;
-
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -31,20 +24,11 @@ protected:
 
 	virtual void SetNameTagPosition(FVector& Offset);
 
-	virtual void SetNameTagText(FString& Text, FColor& Color);
-
-	UPROPERTY(EditAnywhere, Category = "Class Types")
-	TSubclassOf<UUserWidget> TextWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category = "Runtime")
-	class UWidgetComponent* NameTagWidget;
-
-	//UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-	//FChangeNameTag ChangeNameTag;
-	
+	virtual void SetNameTagText(FText& Text, FColor& Color);
+		
 	//NameTag can be set in editor or accessed in child classes
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NameTag")
-	FString NameTagText;
+	FText NameTagText;
 
 	//Color can be set in editor or accessed in child classes
 	UPROPERTY(EditAnywhere)
@@ -53,12 +37,16 @@ protected:
 	UPROPERTY(EditAnywhere)
 	FVector NameTagOffset = FVector(0, 0, 1.0f);
 
+	UPROPERTY()
+	class UTextWidget* NameTagTextWidget;
 
 private:
-	/*UPROPERTY(EditDefaultsOnly)
-	float TextOffset;*/
+	UPROPERTY()
+	TSubclassOf<UUserWidget> TextWidgetClass;
 
-
+	UPROPERTY()
+	class UWidgetComponent* NameTagWidget;
+	
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
