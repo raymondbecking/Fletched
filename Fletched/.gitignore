@@ -77,3 +77,7 @@ DerivedDataCache/*
 Content/CitySampleBuildings/*
 Content/IndustryPropsPack6/*
 Content/StarterContent/*
+
+#Other
+Content/__ExternalActors__/
+Content/__ExternalObjects__/
