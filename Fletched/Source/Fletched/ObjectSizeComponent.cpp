@@ -4,9 +4,9 @@
 	This component displays the size of the object as text above it    
 	*/
 
+#include "ObjectSizeComponent.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/KismetTextLibrary.h"
-#include "ObjectSizeComponent.h"
 
 // Sets default values for this component's properties
 UObjectSizeComponent::UObjectSizeComponent()

@@ -15,16 +15,20 @@ class FLETCHED_API UTextWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION(BlueprintCallable, BlueprintInternalUseOnly)
-	void SetValue(FText text) { Text = text;};
+	//Set the text value
+	UFUNCTION(BlueprintInternalUseOnly)
+	void SetTextLabel(FText &Text);
 
+	//Set the color of the text
+	UFUNCTION(BlueprintInternalUseOnly)
+	void SetColor(FColor &Color);
+	
 protected:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	class UTextBlock* TextLabel;
+	class UTextBlock* TextLabel = nullptr;
 
 	virtual void NativeConstruct() override;
 
 private:
-	FText Text;
 	
 };

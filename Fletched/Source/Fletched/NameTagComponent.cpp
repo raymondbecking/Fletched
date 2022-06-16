@@ -20,19 +20,10 @@ UNameTagComponent::UNameTagComponent()
 
 	NameTagWidget = CreateDefaultSubobject<UWidgetComponent>("NameTagWidget");
 	
-	//Use WBP_TextWidget as template for the Name Tag
-	static ConstructorHelpers::FClassFinder<UUserWidget> WidgetObject(TEXT("/Game/Fletched/Widgets/WBP_TextWidget"));
-	if (WidgetObject.Succeeded())
-	{		
-		TextWidgetClass = WidgetObject.Class;		
-	}
-	else
-	{
-		TextWidgetClass = nullptr;
-	}
-	
 	//Name Tag defaults
 	NameTagColor = FColor::FromHex("BCFFDAFF");
+	//Space default
+	NameTagSpace = EWidgetSpace::Screen;
 }
 
 
@@ -50,12 +41,11 @@ void UNameTagComponent::BeginPlay()
 			SetNameTagText(NameTagText, NameTagColor);			
 			SetNameTagPosition(NameTagOffset);
 		}
+	}
 			
 		//TODO: could be useful later
 		//Calculate the center of the mesh adjusted by object scale
 		//FVector MeshCenter = ObjectScale * (FVector((MaxBounds.X + MinBounds.X), (MaxBounds.Y + MinBounds.Y), (MaxBounds.Z + MinBounds.Z)) / 2);
-	}
-
 }
 
 // Called every frame
@@ -69,8 +59,12 @@ void UNameTagComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 void UNameTagComponent::CreateNameTagWidget()
 {
 	//Widget Setup
-	NameTagWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	if(TextWidgetObject != nullptr)
+	{
+		TextWidgetClass = TextWidgetObject->GetClass();
+	}
 	NameTagWidget->SetWidgetClass(TextWidgetClass);
+	NameTagWidget->SetWidgetSpace(NameTagSpace);
 	NameTagWidget->SetDrawSize(FVector2D(700.0f, 30.0f));
 	NameTagWidget->SetVisibility(true);
 
@@ -120,17 +114,21 @@ void UNameTagComponent::SetNameTagPosition(FVector &PositionOffset)
 	NameTagWidget->AddLocalOffset(NameTagPosition + PositionOffset);
 }
 
-void UNameTagComponent::SetNameTagText(FText &Text, FColor &Color)
+void UNameTagComponent::SetNameTagText(FText& Text, FColor& Color)
 {
 	NameTagWidget->InitWidget();
-	if(NameTagWidget->GetUserWidgetObject() != nullptr)
+	if (NameTagWidget->GetUserWidgetObject() != nullptr)
 	{
 		//Cast to the parent class of the Widget BP
-		NameTagTextWidget = Cast<UTextWidget>(NameTagWidget->GetUserWidgetObject());		
-		NameTagTextWidget->SetValue(Text);
-	}		
-
-	//Set NameTag Text Color
+		NameTagTextWidget = Cast<UTextWidget>(NameTagWidget->GetUserWidgetObject());
+		NameTagTextWidget->SetTextLabel(Text);
+		
+		if (bOverrideDefaultColor)
+		{
+			//Set NameTag Text Color
+			NameTagTextWidget->SetColor(Color);
+		}
+	}
 }
 
 
