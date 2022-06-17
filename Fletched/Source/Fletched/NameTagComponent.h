@@ -17,11 +17,17 @@ public:
 	// Sets default values for this component's properties
 	UNameTagComponent();
 
+	//Allows reconfiguration for the settings of the text widget
+	void ReconfigureTextWidget(UUserWidget& Widget, FText Text, EWidgetSpace WidgetSpace, FVector WidgetOffset,
+	                           bool bOverrideTextColor = true, FColor Color = FColor::White);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	virtual void CreateNameTagWidget();
+	virtual void CreateNameTagWidget(FText& Text, FColor& Color);
+
+	virtual void SetupNameTagWidget();
 
 	virtual void SetNameTagPosition(FVector& Offset);
 
@@ -36,12 +42,16 @@ protected:
 	bool bOverrideDefaultColor;
 
 	//Color can be set in editor or accessed in child classes
-	UPROPERTY(EditAnywhere, Category = "NameTag")
+	UPROPERTY(EditAnywhere, Category = "NameTag", meta=(EditCondition="bOverrideDefaultColor"))
 	FColor NameTagColor;
 
 	//Set the coordinate space to render the Name Tag
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NameTag")
 	EWidgetSpace NameTagSpace;
+	
+	//Set the Widget BP here, BP must have TextWidget as parent
+	UPROPERTY(EditAnywhere, Category = "NameTag")
+	UUserWidget* TextWidgetObject;
 
 	//Set custom offset for repositioning the Name Tag
 	UPROPERTY(EditAnywhere, Category = "NameTag")
@@ -50,9 +60,6 @@ protected:
 	UPROPERTY()
 	class UTextWidget* NameTagTextWidget;
 
-	//Set the Widget BP here, BP must have TextWidget as parent
-	UPROPERTY(EditAnywhere, Category = "NameTag")
-	UUserWidget* TextWidgetObject;
 
 private:
 	UPROPERTY()

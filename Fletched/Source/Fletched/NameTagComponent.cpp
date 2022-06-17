@@ -31,21 +31,12 @@ UNameTagComponent::UNameTagComponent()
 void UNameTagComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	CreateNameTagWidget(NameTagText, NameTagColor);
 
-	//Check if this component is attached to something
-	if (GetOwner() != nullptr)
-	{		
-		if(NameTagWidget != nullptr)
-		{
-			CreateNameTagWidget();
-			SetNameTagText(NameTagText, NameTagColor);			
-			SetNameTagPosition(NameTagOffset);
-		}
-	}
-			
-		//TODO: could be useful later
-		//Calculate the center of the mesh adjusted by object scale
-		//FVector MeshCenter = ObjectScale * (FVector((MaxBounds.X + MinBounds.X), (MaxBounds.Y + MinBounds.Y), (MaxBounds.Z + MinBounds.Z)) / 2);
+	//TODO: could be useful later
+	//Calculate the center of the mesh adjusted by object scale
+	//FVector MeshCenter = ObjectScale * (FVector((MaxBounds.X + MinBounds.X), (MaxBounds.Y + MinBounds.Y), (MaxBounds.Z + MinBounds.Z)) / 2);
 }
 
 // Called every frame
@@ -54,9 +45,24 @@ void UNameTagComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-/* Setup and creation of the NameTagWidget
+// Creation of the NameTagWidget 
+void UNameTagComponent::CreateNameTagWidget(FText& Text, FColor& Color)
+{
+	//Check if this component is attached to something
+	if (GetOwner() != nullptr)
+	{
+		if(NameTagWidget != nullptr)
+		{
+			SetupNameTagWidget();
+			SetNameTagText(Text, Color);			
+			SetNameTagPosition(NameTagOffset);	
+		}
+	}	
+}
+
+/* Setup and settings for the NameTagWidget
  */
-void UNameTagComponent::CreateNameTagWidget()
+void UNameTagComponent::SetupNameTagWidget()
 {
 	//Widget Setup
 	if(TextWidgetObject != nullptr)
@@ -75,7 +81,7 @@ void UNameTagComponent::CreateNameTagWidget()
 		                            EAttachmentRule::KeepWorld,
 		                            EAttachmentRule::KeepWorld,
 		                            true));
-	NameTagWidget->CreationMethod = EComponentCreationMethod::Instance;
+	NameTagWidget->CreationMethod = EComponentCreationMethod::Instance;	
 }
 
 /* This function calculates the topside of the mesh this component is attached to
@@ -130,5 +136,21 @@ void UNameTagComponent::SetNameTagText(FText& Text, FColor& Color)
 		}
 	}
 }
+
+void UNameTagComponent::ReconfigureTextWidget(UUserWidget& Widget, FText Text, EWidgetSpace WidgetSpace,
+                                              FVector WidgetOffset, bool bOverrideTextColor, FColor Color)
+{
+	TextWidgetObject = &Widget;
+	NameTagText = Text;
+	NameTagOffset = WidgetOffset;
+	NameTagSpace = WidgetSpace;
+	
+	if(bOverrideTextColor)
+	{
+		NameTagColor = Color;
+		bOverrideDefaultColor = true;
+	}
+}
+
 
 
