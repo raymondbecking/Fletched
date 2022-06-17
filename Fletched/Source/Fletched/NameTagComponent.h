@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Components/TextRenderComponent.h"
 #include "NameTagComponent.generated.h"
 
+enum class EWidgetSpace : uint8;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FLETCHED_API UNameTagComponent : public UActorComponent
@@ -17,35 +17,50 @@ public:
 	// Sets default values for this component's properties
 	UNameTagComponent();
 
-	//Text component to be attached to the owner
-	UTextRenderComponent* NameTagObject;
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	virtual void CreateNameTagObject(FString& ObjectName, FString& NameTagText, FColor& Color, FVector& PositionOffset);
+	virtual void CreateNameTagWidget();
 
 	virtual void SetNameTagPosition(FVector& Offset);
 
-	virtual void SetNameTag(FString& Text, FColor& Color);
+	virtual void SetNameTagText(FText& Text, FColor& Color);
+		
+	//Name Tag can be set in editor or accessed in child classes
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "NameTag")
+	FText NameTagText;
 
-	//NameTag can be set in editor or accessed in child classes
-	UPROPERTY(EditAnywhere)
-	FString NameTagText;
+	//Default color is set in the Widget BP
+	UPROPERTY(EditAnywhere, Category = "NameTag")
+	bool bOverrideDefaultColor;
 
 	//Color can be set in editor or accessed in child classes
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "NameTag")
 	FColor NameTagColor;
 
-	UPROPERTY(EditAnywhere)
-	FVector NameTagOffset = FVector(0, 0, 20);
+	//Set the coordinate space to render the Name Tag
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NameTag")
+	EWidgetSpace NameTagSpace;
+
+	//Set custom offset for repositioning the Name Tag
+	UPROPERTY(EditAnywhere, Category = "NameTag")
+	FVector NameTagOffset = FVector(0, 0, 1.0f);
+	
+	UPROPERTY()
+	class UTextWidget* NameTagTextWidget;
+
+	//Set the Widget BP here, BP must have TextWidget as parent
+	UPROPERTY(EditAnywhere, Category = "NameTag")
+	UUserWidget* TextWidgetObject;
 
 private:
-	/*UPROPERTY(EditDefaultsOnly)
-	float TextOffset;*/
+	UPROPERTY()
+	TSubclassOf<UUserWidget> TextWidgetClass;
 
-
+	UPROPERTY()
+	class UWidgetComponent* NameTagWidget;
+	
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

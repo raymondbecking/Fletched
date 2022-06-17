@@ -39,6 +39,7 @@ AFletchedCharacter::AFletchedCharacter()
 
 	if (GetCharacterMovement() != nullptr)
 	{
+		//Save original friction settings, character friction is manipulated by sliding
 		DefaultFriction = GetCharacterMovement()->GroundFriction;
 	}
 	else
@@ -244,7 +245,6 @@ void AFletchedCharacter::SlidePhysics(bool bIsSliding)
 		GetCharacterMovement()->bCanWalkOffLedgesWhenCrouching = false;
 	}
 }
-
 
 void AFletchedCharacter::TurnAtRate(float Rate)
 {
