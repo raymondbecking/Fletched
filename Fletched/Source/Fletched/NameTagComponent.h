@@ -19,7 +19,7 @@ public:
 
 	//Allows reconfiguration for the settings of the text widget
 	void ReconfigureTextWidget(UUserWidget& Widget, FText Text, EWidgetSpace WidgetSpace, FVector WidgetOffset,
-	                           bool bOverrideTextColor = true, FColor Color = FColor::White);
+	                           FRotator WidgetRotation, bool bOverrideTextColor = true, FColor Color = FColor::White);
 
 protected:
 	// Called when the game starts
@@ -56,6 +56,10 @@ protected:
 	//Set custom offset for repositioning the Name Tag
 	UPROPERTY(EditAnywhere, Category = "NameTag")
 	FVector NameTagOffset = FVector(0, 0, 1.0f);
+
+	//Set custom rotation for the Name Tag, only applicable in world space
+	UPROPERTY(EditAnywhere, Category = "NameTag")
+	FRotator NameTagRotation = FRotator(0, 0, 1.0f);
 	
 	UPROPERTY()
 	class UTextWidget* NameTagTextWidget;

@@ -12,6 +12,7 @@ UDebugToolsComponent::UDebugToolsComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	//TODO: Make NameTag location preview show up in-editor
 	DebugNameTagComponent = CreateDefaultSubobject<UNameTagComponent>("Name Tag Component");
 
 	//Defaults
@@ -38,7 +39,7 @@ void UDebugToolsComponent::BeginPlay()
 		if(DebugTextWidgetObject != nullptr)
 		{
 			DebugNameTagComponent->ReconfigureTextWidget(*DebugTextWidgetObject, DebugNameTagText, DebugNameTagSpace,
-			                                             DebugNameTagOffset, bOverrideWidgetColor, DebugNameTagColor);
+			                                             DebugNameTagOffset, DebugNameTagRotation, bOverrideWidgetColor, DebugNameTagColor);
 		}
 	}
 	// ...

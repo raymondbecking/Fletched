@@ -78,7 +78,7 @@ void UNameTagComponent::SetupNameTagWidget()
 	NameTagWidget->RegisterComponent();
 	NameTagWidget->AttachToComponent(GetOwner()->GetRootComponent(),
 	                            FAttachmentTransformRules::FAttachmentTransformRules(EAttachmentRule::SnapToTarget,
-		                            EAttachmentRule::KeepWorld,
+		                            EAttachmentRule::SnapToTarget,
 		                            EAttachmentRule::KeepWorld,
 		                            true));
 	NameTagWidget->CreationMethod = EComponentCreationMethod::Instance;	
@@ -116,6 +116,9 @@ void UNameTagComponent::SetNameTagPosition(FVector &PositionOffset)
 	//Make sure offset isn't affected by actor scale
 	PositionOffset = PositionOffset / GetOwner()->GetActorScale();
 
+	//Change the rotation of the NameTag in world space
+	NameTagWidget->AddLocalRotation(NameTagRotation);
+	
 	//Reposition Text based on object bounds and the offset
 	NameTagWidget->AddLocalOffset(NameTagPosition + PositionOffset);
 }
@@ -138,11 +141,12 @@ void UNameTagComponent::SetNameTagText(FText& Text, FColor& Color)
 }
 
 void UNameTagComponent::ReconfigureTextWidget(UUserWidget& Widget, FText Text, EWidgetSpace WidgetSpace,
-                                              FVector WidgetOffset, bool bOverrideTextColor, FColor Color)
+                                              FVector WidgetOffset, FRotator WidgetRotation, bool bOverrideTextColor, FColor Color)
 {
 	TextWidgetObject = &Widget;
 	NameTagText = Text;
 	NameTagOffset = WidgetOffset;
+	NameTagRotation = WidgetRotation;
 	NameTagSpace = WidgetSpace;
 	
 	if(bOverrideTextColor)

@@ -55,7 +55,11 @@ protected:
 
 	//Set custom offset for repositioning the Name Tag
 	UPROPERTY(EditAnywhere, Category="NameTag", meta=(EditCondition="bEnableNameTag"))
-	FVector DebugNameTagOffset = FVector(0, 0, 20.0f);	
+	FVector DebugNameTagOffset = FVector(0, 0, 20.0f);
+
+	//Set custom rotation for the Name Tag, only applicable in world space
+	UPROPERTY(EditAnywhere, Category = "NameTag")
+	FRotator DebugNameTagRotation = FRotator(0, 0, 1.0f);
 
 	UPROPERTY()
 	class UNameTagComponent* DebugNameTagComponent;
