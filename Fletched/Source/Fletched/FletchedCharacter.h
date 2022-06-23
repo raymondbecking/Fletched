@@ -16,6 +16,8 @@ class USoundBase;
 // Declaration of the delegate that will be called when the Primary Action is triggered
 // It is declared as dynamic so it can be accessed also in Blueprints
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUseItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHoldItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReleaseItem);
 // Declaration of the delegate that will be called when Slide is triggered
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCameraTilt);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCameraTilt);
@@ -49,6 +51,14 @@ public:
 	FOnUseItem OnUseItem;
 
 	/** Delegate to whom anyone can subscribe to receive this event */
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnHoldItem OnHoldItem;
+	
+	/** Delegate to whom anyone can subscribe to receive this event */
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnReleaseItem OnReleaseItem;
+
+	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(BlueprintAssignable, Category = "Slide")
 	FStartCameraTilt StartCameraTilt;
 
@@ -58,8 +68,14 @@ public:
 
 protected:
 	
-	/** Fires a projectile. */
+	/** Activates primary action. */
 	void OnPrimaryAction();
+
+	/** Holds primary action. */
+	void OnPrimaryHoldAction();
+
+	/** Release primary action. */
+	void OnPrimaryReleaseAction();
 
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);

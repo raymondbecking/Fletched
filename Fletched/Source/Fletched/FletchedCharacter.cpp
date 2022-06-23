@@ -82,6 +82,10 @@ void AFletchedCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	// Bind fire event
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AFletchedCharacter::OnPrimaryAction);
 
+	// Bind charge and release item event
+	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AFletchedCharacter::OnPrimaryHoldAction);
+	PlayerInputComponent->BindAction("PrimaryAction", IE_Released, this, &AFletchedCharacter::OnPrimaryReleaseAction);
+
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
 
@@ -102,6 +106,18 @@ void AFletchedCharacter::OnPrimaryAction()
 {
 	// Trigger the OnItemUsed Event
 	OnUseItem.Broadcast();
+}
+
+void AFletchedCharacter::OnPrimaryHoldAction()
+{
+	// Trigger the OnItemUsed Event
+	OnHoldItem.Broadcast();
+}
+
+void AFletchedCharacter::OnPrimaryReleaseAction()
+{
+	// Trigger the OnItemUsed Event
+	OnReleaseItem.Broadcast();
 }
 
 void AFletchedCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
