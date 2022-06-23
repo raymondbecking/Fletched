@@ -15,7 +15,7 @@ class AFletchedProjectile : public AActor
 {
 	GENERATED_BODY()
 
-	/** Sphere collision component */
+	/** Box collision component */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
 	UBoxComponent* CollisionComp;
 
@@ -25,6 +25,9 @@ class AFletchedProjectile : public AActor
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	FCollisionProfileName CollisionProfile;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	FVector ProjectileSize = FVector(67,1,1);
 
 public:
 	AFletchedProjectile();

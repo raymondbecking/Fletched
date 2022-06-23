@@ -6,18 +6,15 @@
 
 AFletchedProjectile::AFletchedProjectile() 
 {
-	// Use a sphere as a simple collision representation
+	// Use a box as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
-	FVector ProjectileSize = FVector(90,1,1);
-	CollisionComp->InitBoxExtent(ProjectileSize);
 
-	//CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
+	//TODO: Calculate collider size based on the static mesh ?
+	CollisionComp->InitBoxExtent(ProjectileSize);
 	CollisionComp->BodyInstance.SetCollisionProfileName(CollisionProfile.Name);
 	
-	//CollisionComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	CollisionComp->OnComponentHit.AddDynamic(this, &AFletchedProjectile::OnHit);		// set up a notification for when this component hits something blocking
-	
-	
+		
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;

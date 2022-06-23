@@ -129,11 +129,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float SlideDecelerationSpeed = 600.f;
 
-	UPROPERTY(EditDefaultsOnly)
-	float SlideRotationRoll = 10.f;
-
-	double DefaultRoll = 0;
-
+	UPROPERTY()
 	float DefaultFriction;
 
 
