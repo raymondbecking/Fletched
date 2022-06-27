@@ -6,6 +6,7 @@
 #include "FletchedProjectile.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
@@ -30,16 +31,23 @@ void UTP_WeaponComponent::Fire()
 		if (World != nullptr)
 		{
 			APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-			const FRotator SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
 			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			const FVector SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+			SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
 	
 			//Set Spawn Collision Handling Override
 			FActorSpawnParameters ActorSpawnParams;
 			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-	
-			// Spawn the projectile at the muzzle
-			World->SpawnActor<AFletchedProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+
+			if (!bEnableChargedFire)
+			{
+				// Spawn the projectile at the muzzle
+				World->SpawnActor<AFletchedProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+			}
+			else
+			{
+				ReleaseChargedFire();
+			}
 		}
 	}
 	
@@ -61,6 +69,17 @@ void UTP_WeaponComponent::Fire()
 	}
 }
 
+//Charge fire instead of single fire
+void UTP_WeaponComponent::ChargeFire()
+{
+}
+
+void UTP_WeaponComponent::ReleaseChargedFire()
+{
+	//Release a charged shot
+}
+
+
 void UTP_WeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if(Character != nullptr)
@@ -79,8 +98,18 @@ void UTP_WeaponComponent::AttachWeapon(AFletchedCharacter* TargetCharacter)
 		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 		GetOwner()->AttachToComponent(Character->GetMesh1P(),AttachmentRules, FName(TEXT("GripPoint")));
 
-		// Register so that Fire is called every time the character tries to use the item being held
-		Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
+		if (bEnableChargedFire)
+		{
+			// Register so that ChargeFire is called every time the character holds down the item being held
+			Character->OnHoldItem.AddDynamic(this, &UTP_WeaponComponent::ChargeFire);
+			// Register so that Fire is called every time the character tries to release the charge of the item being held
+			Character->OnReleaseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
+		}
+		else
+		{
+			// Register so that Fire is called every time the character tries to use the item being held
+			Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
+		}
 	}
 }
 

@@ -39,15 +39,32 @@ public:
 
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void Fire();
+	virtual void Fire();
+
+	/** Make the weapon Charge a Projectile */
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void ChargeFire();
+
+	/** Make the weapon Charge a Projectile */
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void ReleaseChargedFire();
 
 protected:
 	/** Ends gameplay for this component. */
 	UFUNCTION()
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 		
+	/* Choose between charged fire and single fire */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true"))
+	bool bEnableChargedFire;
+
+	UPROPERTY()
+	FRotator SpawnRotation;
+	UPROPERTY()
+	FVector SpawnLocation;
 
 private:
 	/** The Character holding this weapon*/
-	AFletchedCharacter* Character;
+	AFletchedCharacter* Character;	
+
 };
