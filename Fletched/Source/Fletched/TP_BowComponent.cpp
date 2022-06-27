@@ -15,10 +15,7 @@ UTP_BowComponent::UTP_BowComponent()
 
 void UTP_BowComponent::ChargeFire()
 {
-	if(GetWorld() != nullptr)
-	{
-		ChargeStartTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());	
-	}
+	Super::ChargeFire();
 }
 
 void UTP_BowComponent::ReleaseChargedFire()
@@ -30,8 +27,9 @@ void UTP_BowComponent::ReleaseChargedFire()
 		{
 			if(bEnableChargedFire)
 			{
-				//Return if projectile speed is invalid
-				if (CalculateProjectileSpeed() == 0.f) { return; }
+				const float ProjectileSpeed = ChargedProjectileSpeed();
+				//Abort charged fire if projectile speed is invalid
+				if (ProjectileSpeed == 0.f) { return; }
 				
 				FTransform ProjectileTransform;
 				ProjectileTransform.SetLocation(SpawnLocation);
@@ -44,8 +42,8 @@ void UTP_BowComponent::ReleaseChargedFire()
 				//Settings for spawned projectile
 				if (ProjectileActor != nullptr)
 				{					
-					ProjectileActor->GetProjectileMovement()->MaxSpeed = CalculateProjectileSpeed();
-					ProjectileActor->GetProjectileMovement()->InitialSpeed = CalculateProjectileSpeed();
+					ProjectileActor->GetProjectileMovement()->MaxSpeed = ProjectileSpeed;
+					ProjectileActor->GetProjectileMovement()->InitialSpeed = ProjectileSpeed;
 					UGameplayStatics::FinishSpawningActor(ProjectileActor, ProjectileTransform);
 				}
 			}	
@@ -54,24 +52,15 @@ void UTP_BowComponent::ReleaseChargedFire()
 	}
 }
 
-float UTP_BowComponent::CalculateProjectileSpeed()
+float UTP_BowComponent::ChargedProjectileSpeed()
 {
-	if (GetWorld() == nullptr)
-	{
-		return 0.f;
-	}
-
-	//Calculate how long the bow was charged in seconds
-	const float ChargeEndTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
-	float TotalChargeTime = ChargeEndTime - ChargeStartTime;
-	UE_LOG(LogTemp, Warning, TEXT("Charge time : %f seconds"), TotalChargeTime);
+	float TotalChargeTime = TotalTimeCharged();
 
 	//Abort bow charge if it wasn't held long enough
 	if(TotalChargeTime < MinChargeTimeInSeconds)
 	{
 		return 0.f;
-	}
-	
+	}	
 	//Make sure charge time does not exceed maximum
 	if(TotalChargeTime > MaxChargeTimeInSeconds)
 	{
@@ -79,13 +68,13 @@ float UTP_BowComponent::CalculateProjectileSpeed()
 	}
 
 	//Normalize the amount of time the bow was charged
-	float NormalizedChargeTime = UKismetMathLibrary::NormalizeToRange(TotalChargeTime, MinChargeTimeInSeconds, MaxChargeTimeInSeconds);
+	const float NormalizedChargeTime = UKismetMathLibrary::NormalizeToRange(TotalChargeTime, MinChargeTimeInSeconds, MaxChargeTimeInSeconds);
 	
 	//Amount of speed that can be added by the charge time
-	float ProjectileSpeedRange = MaxChargeProjectileSpeed - MinChargeProjectileSpeed;
+	const float ProjectileSpeedRange = MaxChargeProjectileSpeed - MinChargeProjectileSpeed;
 	
 	//This gives the maximum projectile speed when the bow is fully charged
-	float ProjectileSpeed = NormalizedChargeTime * ProjectileSpeedRange;
+	const float ProjectileSpeed = NormalizedChargeTime * ProjectileSpeedRange;
 
 	UE_LOG(LogTemp, Warning, TEXT("Speed : %f"), ProjectileSpeed + MinChargeProjectileSpeed);
 	return ProjectileSpeed + MinChargeProjectileSpeed;

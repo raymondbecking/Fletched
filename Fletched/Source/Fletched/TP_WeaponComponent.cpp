@@ -69,9 +69,12 @@ void UTP_WeaponComponent::Fire()
 	}
 }
 
-//Charge fire instead of single fire
 void UTP_WeaponComponent::ChargeFire()
 {
+	if(GetWorld() != nullptr)
+	{
+		ChargeStartTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());	
+	}
 }
 
 void UTP_WeaponComponent::ReleaseChargedFire()
@@ -95,7 +98,7 @@ void UTP_WeaponComponent::AttachWeapon(AFletchedCharacter* TargetCharacter)
 	if(Character != nullptr)
 	{
 		// Attach the weapon to the First Person Character
-		FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+		const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 		GetOwner()->AttachToComponent(Character->GetMesh1P(),AttachmentRules, FName(TEXT("GripPoint")));
 
 		if (bEnableChargedFire)
@@ -111,5 +114,17 @@ void UTP_WeaponComponent::AttachWeapon(AFletchedCharacter* TargetCharacter)
 			Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
 		}
 	}
+}
+
+float UTP_WeaponComponent::TotalTimeCharged()
+{
+	if (GetWorld() != nullptr)
+	{
+		//Calculate how long the bow was charged in seconds
+		const float ChargeEndTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
+		UE_LOG(LogTemp, Warning, TEXT("Charge time : %f seconds"), ChargeEndTime - ChargeStartTime);
+		return ChargeEndTime - ChargeStartTime;
+	}
+	return 0.f;
 }
 

@@ -45,9 +45,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void ChargeFire();
 
-	/** Make the weapon Charge a Projectile */
+	/** Make the weapon Release the charged Projectile */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	virtual void ReleaseChargedFire();
+
+	/** Returns how long the weapon was charged */
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	float TotalTimeCharged();
 
 protected:
 	/** Ends gameplay for this component. */
@@ -62,6 +66,9 @@ protected:
 	FRotator SpawnRotation;
 	UPROPERTY()
 	FVector SpawnLocation;
+	
+	UPROPERTY()
+	float ChargeStartTime;
 
 private:
 	/** The Character holding this weapon*/

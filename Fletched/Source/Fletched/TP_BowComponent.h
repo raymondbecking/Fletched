@@ -22,22 +22,20 @@ protected:
 
 	virtual void ReleaseChargedFire() override;
 
+	/** Returns the speed of the Charged Projectile */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	float CalculateProjectileSpeed();
-
-	UPROPERTY()
-	float ChargeStartTime;
+	float ChargedProjectileSpeed();
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true", EditCondition="bEnableChargedFire"))
 	float MinChargeProjectileSpeed = 2000.f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true", EditCondition="bEnableChargedFire"))
 	float MaxChargeProjectileSpeed = 7000.f;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true", EditCondition="bEnableChargedFire"))
 	float MinChargeTimeInSeconds = .2f;	
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true", EditCondition="bEnableChargedFire"))
 	float MaxChargeTimeInSeconds = 1.5f;
 };
