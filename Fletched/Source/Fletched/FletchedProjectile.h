@@ -20,13 +20,13 @@ class AFletchedProjectile : public AActor
 	UBoxComponent* CollisionComp;
 
 	/** Projectile movement component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = Movement)
 	UProjectileMovementComponent* ProjectileMovement;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	
+	UPROPERTY(EditDefaultsOnly)
 	FCollisionProfileName CollisionProfile;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditDefaultsOnly)
 	FVector ProjectileSize = FVector(67,1,1);
 
 public:
