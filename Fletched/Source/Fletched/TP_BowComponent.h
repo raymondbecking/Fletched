@@ -22,11 +22,14 @@ protected:
 
 	virtual void ReleaseChargedFire() override;
 
+	/** Mimics Nocking or Releasing the arrow by changing the visibility of an attached mesh */
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void NockArrow(bool bArrowNocked);
+	
 	/** Returns the speed of the Charged Projectile */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	float ChargedProjectileSpeed();
 
-private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true", EditCondition="bEnableChargedFire"))
 	float MinChargeProjectileSpeed = 2000.f;
 	
@@ -37,5 +40,5 @@ private:
 	float MinChargeTimeInSeconds = .2f;	
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true", EditCondition="bEnableChargedFire"))
-	float MaxChargeTimeInSeconds = 1.5f;
+	float MaxChargeTimeInSeconds = 1.5f;	
 };

@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/KismetTextLibrary.h"
 
 
 UTP_BowComponent::UTP_BowComponent()
@@ -16,6 +17,9 @@ UTP_BowComponent::UTP_BowComponent()
 void UTP_BowComponent::ChargeFire()
 {
 	Super::ChargeFire();
+
+	//"Attach" Arrow to the bow
+	NockArrow(true);	
 }
 
 void UTP_BowComponent::ReleaseChargedFire()
@@ -39,15 +43,45 @@ void UTP_BowComponent::ReleaseChargedFire()
 				AFletchedProjectile* ProjectileActor = World->SpawnActorDeferred<AFletchedProjectile>(
 					ProjectileClass, ProjectileTransform);
 
-				//Settings for spawned projectile
+				//Access projectile pointer to change settings for spawned projectile
 				if (ProjectileActor != nullptr)
-				{					
+				{
+					//"Release" the arrow from the bow
+					NockArrow(false);
+					
 					ProjectileActor->GetProjectileMovement()->MaxSpeed = ProjectileSpeed;
 					ProjectileActor->GetProjectileMovement()->InitialSpeed = ProjectileSpeed;
 					UGameplayStatics::FinishSpawningActor(ProjectileActor, ProjectileTransform);
 				}
 			}	
 	
+		}
+	}
+}
+
+void UTP_BowComponent::NockArrow(bool bArrowNocked)
+{
+	if (GetOwner() != nullptr)
+	{
+		//Get the static mesh components of the bow
+		TArray<UStaticMeshComponent*> MeshComponents;
+		GetOwner()->GetComponents<UStaticMeshComponent>(MeshComponents);
+
+		for (UStaticMeshComponent* MeshComponent : MeshComponents)
+		{
+			if (MeshComponent->GetName() == "arrow")
+			{
+				if (bArrowNocked)
+				{
+					//Nock the arrow
+					MeshComponent->SetVisibility(true);
+				}
+				else
+				{
+					//Release arrow
+					MeshComponent->SetVisibility(false);
+				}
+			}
 		}
 	}
 }
