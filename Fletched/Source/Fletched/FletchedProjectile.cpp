@@ -11,8 +11,7 @@ AFletchedProjectile::AFletchedProjectile()
 
 	//TODO: Calculate collider size based on the static mesh ?
 	CollisionComp->InitBoxExtent(ProjectileSize);
-	CollisionComp->BodyInstance.SetCollisionProfileName(CollisionProfile.Name);
-	
+	CollisionComp->BodyInstance.SetCollisionProfileName(CollisionProfile.Name);	
 	CollisionComp->OnComponentHit.AddDynamic(this, &AFletchedProjectile::OnHit);		// set up a notification for when this component hits something blocking
 		
 	// Players can't walk on it
@@ -38,9 +37,7 @@ void AFletchedProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr))
 	{
-		
-		UE_LOG(LogTemp, Warning, TEXT("Other Actor %s"), *OtherActor->GetName());
-		//Behavior for arrows hitting arrows
+		/*//Behavior for arrows hitting arrows
 		if(OtherActor->IsA(AFletchedProjectile::StaticClass()))
 		{
 			//Replace the other arrow with this arrow if they collide (Robin Hood)
@@ -53,7 +50,7 @@ void AFletchedProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 			}
 			
 			OtherActor->Destroy();
-		}
+		}*/
 
 		//Behavior for Physics objects being hit
 		if(OtherComp->IsSimulatingPhysics())

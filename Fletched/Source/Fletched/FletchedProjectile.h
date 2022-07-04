@@ -27,7 +27,7 @@ class AFletchedProjectile : public AActor
 	FCollisionProfileName CollisionProfile;
 
 	UPROPERTY(EditDefaultsOnly)
-	FVector ProjectileSize = FVector(67,1,1);
+	FVector ProjectileSize = FVector(45,1,1);
 
 public:
 	AFletchedProjectile();
