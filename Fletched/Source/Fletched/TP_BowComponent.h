@@ -22,13 +22,24 @@ protected:
 
 	virtual void ReleaseChargedFire() override;
 
+	/* Instantiate Arrow BP */
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	virtual void SpawnArrow();
+
 	/** Mimics Nocking or Releasing the arrow by changing the visibility of an attached mesh */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	virtual void NockArrow(bool bArrowNocked);
+	virtual void NockArrow(bool bIsNocking);
+
+	UPROPERTY()
+	AFletchedProjectile* StaticArrow;
 	
 	/** Returns the speed of the Charged Projectile */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	float ChargedProjectileSpeed();
+
+	/** Returns the pointer to the arrow socket mesh*/
+	UFUNCTION(BlueprintCallable, Category="Weapon")
+	UStaticMeshComponent* GetSocketMesh(FString SocketMesh);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon", meta=(AllowPrivateAccess="true", EditCondition="bEnableChargedFire"))
 	float MinChargeProjectileSpeed = 2000.f;
