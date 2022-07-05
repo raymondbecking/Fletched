@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
 #include "FletchedProjectile.generated.h"
 
@@ -14,13 +15,19 @@ class AFletchedProjectile : public AActor
 {
 	GENERATED_BODY()
 
-	/** Sphere collision component */
+	/** Box collision component */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
-	USphereComponent* CollisionComp;
+	UBoxComponent* CollisionComp;
 
 	/** Projectile movement component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, Category = Movement)
 	UProjectileMovementComponent* ProjectileMovement;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FCollisionProfileName CollisionProfile;
+
+	UPROPERTY(EditDefaultsOnly)
+	FVector ProjectileSize = FVector(45,1,1);
 
 public:
 	AFletchedProjectile();
@@ -30,7 +37,7 @@ public:
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	/** Returns CollisionComp subobject **/
-	USphereComponent* GetCollisionComp() const { return CollisionComp; }
+	UBoxComponent* GetCollisionComp() const { return CollisionComp; }
 	/** Returns ProjectileMovement subobject **/
 	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 };
