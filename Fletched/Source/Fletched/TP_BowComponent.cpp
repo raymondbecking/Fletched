@@ -101,6 +101,7 @@ void UTP_BowComponent::NockArrow(bool bIsNocking)
 			StaticArrow = World->SpawnActorDeferred<AFletchedProjectile>(
 				ProjectileClass, SocketMesh->GetSocketTransform(SocketName, ERelativeTransformSpace::RTS_Component));
 
+			// Settings for newly spawned arrow
 			if (StaticArrow != nullptr)
 			{
 				// Destroy ProjectileMovement since we do not need it on the static arrow attached to the bow
@@ -121,10 +122,7 @@ void UTP_BowComponent::NockArrow(bool bIsNocking)
 		{
 			StaticArrow->SetActorHiddenInGame(false);
 		}
-	}
-			
-		
-	
+	}	
 }
 
 float UTP_BowComponent::ChargedProjectileSpeed()
@@ -151,7 +149,6 @@ float UTP_BowComponent::ChargedProjectileSpeed()
 	//This gives the maximum projectile speed when the bow is fully charged
 	const float ProjectileSpeed = NormalizedChargeTime * ProjectileSpeedRange;
 
-	UE_LOG(LogTemp, Warning, TEXT("Speed : %f"), ProjectileSpeed + MinChargeProjectileSpeed);
 	return ProjectileSpeed + MinChargeProjectileSpeed;
 }
 
