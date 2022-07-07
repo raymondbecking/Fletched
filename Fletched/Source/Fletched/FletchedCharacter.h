@@ -152,7 +152,7 @@ private:
 	float DefaultFriction;
 
 	UPROPERTY(EditDefaultsOnly)
-	float SlowMotionMultiplier = .5f;
+	float SlowMotionMultiplier = .33f;
 	
 protected:
 	// APawn interface
