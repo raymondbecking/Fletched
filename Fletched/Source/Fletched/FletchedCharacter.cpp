@@ -8,6 +8,7 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -78,13 +79,16 @@ void AFletchedCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindAction("Slide", IE_Pressed, this, &AFletchedCharacter::Slide);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AFletchedCharacter::StopSlide);
 
-
 	// Bind fire event
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AFletchedCharacter::OnPrimaryAction);
 
 	// Bind charge and release item event
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Pressed, this, &AFletchedCharacter::OnPrimaryHoldAction);
 	PlayerInputComponent->BindAction("PrimaryAction", IE_Released, this, &AFletchedCharacter::OnPrimaryReleaseAction);
+
+	// Bind use skill event
+	PlayerInputComponent->BindAction("PrimarySkill", IE_Released, this, &AFletchedCharacter::OnPrimarySkill);
+	
 
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
@@ -119,6 +123,24 @@ void AFletchedCharacter::OnPrimaryReleaseAction()
 	// Trigger the OnItemUsed Event
 	OnReleaseItem.Broadcast();
 }
+
+void AFletchedCharacter::OnPrimarySkill()
+{
+	if(GetWorld() != nullptr)
+	{
+		// Enable slowmotion if it wasn't already
+		if(UGameplayStatics::GetGlobalTimeDilation(GetWorld()) != SlowMotionMultiplier)
+		{
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), SlowMotionMultiplier);			
+		}
+		// Disable slowmotion if it was enabled
+		else
+		{
+			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);			
+		}
+	}
+}
+
 
 void AFletchedCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
 {
