@@ -77,6 +77,9 @@ protected:
 	/** Release primary action. */
 	void OnPrimaryReleaseAction();
 
+	/** Release primary action. */
+	void OnPrimarySkill();
+
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
@@ -148,7 +151,8 @@ private:
 	UPROPERTY()
 	float DefaultFriction;
 
-
+	UPROPERTY(EditDefaultsOnly)
+	float SlowMotionMultiplier = .5f;
 	
 protected:
 	// APawn interface
