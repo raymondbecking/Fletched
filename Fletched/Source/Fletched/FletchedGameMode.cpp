@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "FletchedGameMode.h"
-#include "FletchedCharacter.h"
+#include "PlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AFletchedGameMode::AFletchedGameMode()

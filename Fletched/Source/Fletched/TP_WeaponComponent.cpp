@@ -2,7 +2,7 @@
 
 
 #include "TP_WeaponComponent.h"
-#include "FletchedCharacter.h"
+#include "PlayerCharacter.h"
 #include "FletchedProjectile.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
@@ -92,7 +92,7 @@ void UTP_WeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 }
 
-void UTP_WeaponComponent::AttachWeapon(AFletchedCharacter* TargetCharacter)
+void UTP_WeaponComponent::AttachWeapon(APlayerCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
 	if(Character != nullptr)
