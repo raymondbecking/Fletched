@@ -15,12 +15,25 @@ public:
 	// Sets default values for this character's properties
 	AFletchedCharacter();
 
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	
+	UFUNCTION(BlueprintPure)
+	bool IsDead() const;
+
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(EditDefaultsOnly)
+	float MaxHealth = 30.f;
+
+	UPROPERTY(VisibleAnywhere)
+	float Health = 100.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	FCollisionProfileName OnDeathCollisionProfile;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+
 
 };
