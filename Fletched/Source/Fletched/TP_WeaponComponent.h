@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "TP_WeaponComponent.generated.h"
 
-class AFletchedCharacter;
+class APlayerCharacter;
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FLETCHED_API UTP_WeaponComponent : public UActorComponent
@@ -35,7 +35,7 @@ public:
 
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
-	void AttachWeapon(AFletchedCharacter* TargetCharacter);
+	void AttachWeapon(APlayerCharacter* TargetCharacter);
 
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
@@ -72,6 +72,6 @@ protected:
 
 private:
 	/** The Character holding this weapon*/
-	AFletchedCharacter* Character;	
+	APlayerCharacter* Character;	
 
 };
