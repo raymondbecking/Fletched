@@ -23,6 +23,7 @@ void UTP_BowComponent::ChargeFire()
 
 void UTP_BowComponent::ReleaseChargedFire()
 {
+	//TODO: Swap order?
 	SpawnArrow();
 	NockArrow(false);
 }
@@ -31,7 +32,7 @@ void UTP_BowComponent::ReleaseChargedFire()
 
 void UTP_BowComponent::SpawnArrow()
 {
-	if (ProjectileClass == nullptr)
+	if (ProjectileClass == nullptr || GetOwner() == nullptr)
 	{
 		return;
 	}
@@ -51,7 +52,8 @@ void UTP_BowComponent::SpawnArrow()
 
 	//Save pointer to the spawned projectile
 	AFletchedProjectile* ProjectileActor = World->SpawnActorDeferred<AFletchedProjectile>(
-		ProjectileClass, ProjectileTransform);
+		ProjectileClass, ProjectileTransform, GetOwner(), GetOwner()->GetAttachParentActor()->GetInstigator());
+
 
 	//Access projectile pointer to change settings for spawned projectile
 	if (ProjectileActor != nullptr)

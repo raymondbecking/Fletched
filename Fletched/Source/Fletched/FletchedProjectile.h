@@ -40,5 +40,9 @@ public:
 	UBoxComponent* GetCollisionComp() const { return CollisionComp; }
 	/** Returns ProjectileMovement subobject **/
 	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
+
+protected:
+	UPROPERTY(EditAnywhere)
+	float Damage = 10.f;
 };
 
