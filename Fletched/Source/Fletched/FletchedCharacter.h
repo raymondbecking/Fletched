@@ -28,7 +28,11 @@ protected:
 	float Health = 100.f;
 
 	UPROPERTY(EditDefaultsOnly)
-	FCollisionProfileName OnDeathCollisionProfile;
+	FCollisionProfileName OnDeathCollisionProfile;	
+
+	// Function called on death
+	UFUNCTION()
+	virtual void DeathBehaviour();
 
 public:	
 	// Called every frame

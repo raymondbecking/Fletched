@@ -13,6 +13,7 @@ AFletchedCharacter::AFletchedCharacter()
     Health = MaxHealth;
 }
 
+
 // Called every frame
 void AFletchedCharacter::Tick(float DeltaTime)
 {
@@ -29,17 +30,17 @@ float AFletchedCharacter::TakeDamage(float DamageAmount, struct FDamageEvent con
 
 	if(IsDead())
 	{
-		//Stop character controls
-		DetachFromControllerPendingDestroy();
-
-		//Use physics to ragdoll on death
-		GetMesh()->SetSimulatePhysics(true);
-		
-		//Adjust collision to prevent strange ragdoll behaviour
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		GetMesh()->SetCollisionProfileName(OnDeathCollisionProfile.Name);		
+		DeathBehaviour();
 	}
+	
 	return DamageToApply;
+}
+
+//Can be overridden and extended in child classes
+void AFletchedCharacter::DeathBehaviour()
+{
+		//Stop character controls
+		DetachFromControllerPendingDestroy();		
 }
 
 //Blueprint Callable
