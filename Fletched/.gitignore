@@ -75,8 +75,13 @@ DerivedDataCache/*
 
 #Content packs
 Content/AssetPacks/*
+
+#Effects & Models
 Content/SFX/*
+Content/FX/*
 Content/Meshes/*
+Content/MSPresets/*
+Content/Megascans/*
 
 #Other
 Content/__ExternalActors__/
