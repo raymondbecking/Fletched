@@ -28,7 +28,23 @@ class FLETCHED_API ABlackHoleProjectile : public AFletchedProjectile
 
 	/** How far from the exit point the projectile should teleport **/
 	UPROPERTY(EditDefaultsOnly, Category=BlackHoleProjectile)
-	float TeleportMargin = 120.f;
+	float TeleportMargin = 60.f;
+
+    /** Teleports projectile past the actor if the reverse LineTrace hits the passed actor **/
+	UFUNCTION()
+	void TeleportProjectile(AActor* TeleportActor);
+
+	/** Effect to spawn **/
+	UPROPERTY(EditDefaultsOnly, Category=BlackHoleProjectile)
+	TSubclassOf<class AActor> BlackHoleEffectClass;
+
+	/** Spawns Black Hole at specified transform **/
+	UFUNCTION()
+	void SpawnBlackHole(const FTransform SpawnTransform);
+
+	/** Time until the black hole should disappear **/
+	UPROPERTY(EditDefaultsOnly, Category=BlackHoleProjectile)
+	float BlackHoleLifeSpan = 1.f;
 	
 public:
 	ABlackHoleProjectile();
@@ -36,7 +52,6 @@ public:
 	/** called when projectile hits something */
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                   FVector NormalImpulse, const FHitResult& Hit) override;
-	void TeleportProjectile();
 
 
 	/** Called when projectile is about to hit something */

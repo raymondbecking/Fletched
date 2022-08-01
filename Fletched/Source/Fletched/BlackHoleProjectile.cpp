@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "Engine/World.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABlackHoleProjectile::ABlackHoleProjectile()
 {	
@@ -15,9 +16,7 @@ ABlackHoleProjectile::ABlackHoleProjectile()
 	DetectorComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 	DetectorComp->InitBoxExtent(FVector(1.5,1.5,1.5));
-	DetectorComp->SetRelativeLocation(DetectorOffset);
-
-	ProjectileSize = FVector(35.f, 5.f, 5.f);	
+	DetectorComp->SetRelativeLocation(DetectorOffset);	
 }
 
 void ABlackHoleProjectile::BeginPlay()
@@ -31,7 +30,6 @@ void ABlackHoleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 	FVector NormalImpulse, const FHitResult& Hit)
 {
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
-	UE_LOG(LogTemp, Warning, TEXT("Actor Hit: %s"), *OtherActor->GetName());
 }
 
 
@@ -39,7 +37,7 @@ void ABlackHoleProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
                                           UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                           const FHitResult& SweepResult)
 {
-	if ((OtherActor == nullptr) || (OtherActor == this) || (OtherComp == nullptr))
+	if ((OtherActor == nullptr) || (OtherActor == this) || (OtherComp == nullptr) || (ProjectileMovement == nullptr))
 	{
 		return;
 	}
@@ -48,7 +46,11 @@ void ABlackHoleProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 	ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
 	if (HitCharacter == nullptr)
 	{
-		TeleportProjectile();
+		// Only teleport when sweep is disabled
+		if(ProjectileMovement->bSweepCollision == false)
+		{
+			TeleportProjectile(OtherActor);			
+		}
 	}
 	else
 	{
@@ -65,7 +67,7 @@ void ABlackHoleProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 	
 }
 
-void ABlackHoleProjectile::TeleportProjectile()
+void ABlackHoleProjectile::TeleportProjectile(AActor* TeleportActor)
 {
 	FVector TraceStart = this->GetActorLocation();
 	FVector TraceEnd = this->GetActorLocation() + this->GetActorForwardVector() * MaxPierceThickness;
@@ -76,26 +78,50 @@ void ABlackHoleProjectile::TeleportProjectile()
 	GetWorld()->LineTraceSingleByChannel(LineHit, TraceStart, TraceEnd, ECC_GameTraceChannel1);
 	//Find all objects from MaxPierceThickness to the projectile
 	GetWorld()->LineTraceMultiByChannel(LineHitReverse, TraceEnd, TraceStart, ECC_GameTraceChannel1);
-
+	
 	for (FHitResult ReverseHit : LineHitReverse)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Reverse Hit Result: %s"), *ReverseHit.GetComponent()->GetName());
+	{		
+		
+		DrawDebugLine(GetWorld(), ReverseHit.Location,
+			              ReverseHit.Location + (this->GetActorForwardVector() * 180), FColor(255, 0, 0),
+			              false, 10.f, 0, 5.f);
 		// Make sure that the projectile only teleports past the actor that was hit
-		if (ReverseHit.GetActor() == LineHit.GetActor())
+		if (ReverseHit.GetActor() == TeleportActor)
 		{
-			DrawDebugLine(GetWorld(), ReverseHit.Location,
-			              ReverseHit.Location + (this->GetActorForwardVector() * 200), FColor(255, 0, 0),
-			              false, 60.f, 0, 5.f);
-
 			if (ProjectileMovement != nullptr)
 			{
+				// Spawn Black hole before teleport
+				SpawnBlackHole(FTransform(LineHit.Location - (this->GetActorForwardVector() * 100)));
+				
 				// Calculate where arrow should go using the line traces
 				FVector TeleportDistance = ReverseHit.Location - LineHit.Location;
 				FVector TeleportAmount = TeleportDistance + (this->GetActorForwardVector() * TeleportMargin);
 				// Teleport arrow to new location
 				ProjectileMovement->MoveUpdatedComponent(TeleportAmount, this->GetActorRotation(), false,
 				                                         nullptr, ETeleportType::TeleportPhysics);
+				// Spawn Black hole after teleport
+				SpawnBlackHole(FTransform(GetActorLocation()));
 			}
 		}
+	}
+}
+
+void ABlackHoleProjectile::SpawnBlackHole(const FTransform SpawnTransform)
+{
+	UWorld* World = GetWorld();
+	if(World == nullptr || BlackHoleEffectClass == nullptr)
+	{
+		return;
+	}
+	
+	AActor* BlackHoleActor = World->SpawnActorDeferred<AActor>(
+		BlackHoleEffectClass, SpawnTransform, GetOwner(), GetOwner()->GetAttachParentActor()->GetInstigator());
+
+
+	//Access projectile pointer to change settings for spawned projectile
+	if (BlackHoleActor != nullptr)
+	{
+		BlackHoleActor->SetLifeSpan(BlackHoleLifeSpan);
+		UGameplayStatics::FinishSpawningActor(BlackHoleActor, SpawnTransform);
 	}
 }
