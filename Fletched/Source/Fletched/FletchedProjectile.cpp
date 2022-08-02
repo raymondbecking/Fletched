@@ -28,11 +28,13 @@ AFletchedProjectile::AFletchedProjectile()
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 
+
 	// Die after 60 seconds by default
 	InitialLifeSpan = 60.0f;
 }
 
-void AFletchedProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AFletchedProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                                FVector NormalImpulse, const FHitResult& Hit)
 {	
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr))
@@ -40,7 +42,7 @@ void AFletchedProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 		//Behavior for Physics objects being hit
 		if(OtherComp->IsSimulatingPhysics())
 		{
-			OtherComp->AddImpulseAtLocation(GetVelocity() * 1.0f, GetActorLocation());
+			OtherComp->AddImpulseAtLocation(GetVelocity() * .3f, GetActorLocation());
 			//Attach this arrow to a physics actor
 			this->AttachToActor(OtherActor, FAttachmentTransformRules::KeepWorldTransform);
 		}

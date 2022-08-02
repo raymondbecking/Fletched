@@ -108,6 +108,8 @@ void UTP_BowComponent::NockArrow(bool bIsNocking)
 			{
 				// Destroy ProjectileMovement since we do not need it on the static arrow attached to the bow
 				StaticArrow->GetProjectileMovement()->DestroyComponent();
+				// Prevent collisions
+				StaticArrow->SetActorEnableCollision(false);
 				// Prevent destruction of the projectile
 				StaticArrow->SetLifeSpan(0);
 				// Attach to the bowstring

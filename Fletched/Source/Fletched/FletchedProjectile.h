@@ -15,6 +15,7 @@ class AFletchedProjectile : public AActor
 {
 	GENERATED_BODY()
 
+protected:
 	/** Box collision component */
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
 	UBoxComponent* CollisionComp;
@@ -27,14 +28,15 @@ class AFletchedProjectile : public AActor
 	FCollisionProfileName CollisionProfile;
 
 	UPROPERTY(EditDefaultsOnly)
-	FVector ProjectileSize = FVector(45,1,1);
+	FVector ProjectileSize = FVector(40,1,1);
 
 public:
 	AFletchedProjectile();
 
 	/** called when projectile hits something */
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	                   FVector NormalImpulse, const FHitResult& Hit);
 
 	/** Returns CollisionComp subobject **/
 	UBoxComponent* GetCollisionComp() const { return CollisionComp; }
