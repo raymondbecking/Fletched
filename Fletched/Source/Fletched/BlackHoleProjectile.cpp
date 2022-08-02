@@ -16,7 +16,6 @@ ABlackHoleProjectile::ABlackHoleProjectile()
 	DetectorComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 	DetectorComp->InitBoxExtent(FVector(1.5,1.5,1.5));
-	DetectorComp->SetRelativeLocation(DetectorOffset);	
 }
 
 void ABlackHoleProjectile::BeginPlay()
@@ -42,7 +41,7 @@ void ABlackHoleProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 		return;
 	}
 	
-	//Dont interact with characters
+	//Non-Character Interactions
 	ACharacter* HitCharacter = Cast<ACharacter>(OtherActor);
 	if (HitCharacter == nullptr)
 	{
@@ -52,7 +51,7 @@ void ABlackHoleProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 			TeleportProjectile(OtherActor);			
 		}
 	}
-	else
+	else //Enemy Interactions
 	{
 		//Check if the character hit was an enemy
 		if (AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(OtherActor); HitEnemy != nullptr)
@@ -74,32 +73,28 @@ void ABlackHoleProjectile::TeleportProjectile(AActor* TeleportActor)
 
 	FHitResult LineHit;
 	TArray<FHitResult> LineHitReverse;
-	//Find what is about to be hit, ECC_GameTraceChannel1 = MultiLineIgnoreProjectile
-	GetWorld()->LineTraceSingleByChannel(LineHit, TraceStart, TraceEnd, ECC_GameTraceChannel1);
-	//Find all objects from MaxPierceThickness to the projectile
-	GetWorld()->LineTraceMultiByChannel(LineHitReverse, TraceEnd, TraceStart, ECC_GameTraceChannel1);
-	
+	//Find what is about to be hit
+	GetWorld()->LineTraceSingleByChannel(LineHit, TraceStart, TraceEnd, ECC_Visibility);
+	//Find all objects from MaxPierceThickness to the projectile	
+	GetWorld()->LineTraceMultiByChannel(LineHitReverse, TraceEnd, TraceStart, ECC_Visibility);
+
 	for (FHitResult ReverseHit : LineHitReverse)
 	{		
-		
-		DrawDebugLine(GetWorld(), ReverseHit.Location,
-			              ReverseHit.Location + (this->GetActorForwardVector() * 180), FColor(255, 0, 0),
-			              false, 10.f, 0, 5.f);
 		// Make sure that the projectile only teleports past the actor that was hit
 		if (ReverseHit.GetActor() == TeleportActor)
 		{
 			if (ProjectileMovement != nullptr)
 			{
-				// Spawn Black hole before teleport
-				SpawnBlackHole(FTransform(LineHit.Location - (this->GetActorForwardVector() * 100)));
-				
-				// Calculate where arrow should go using the line traces
+				SpawnBlackHole(FTransform(LineHit.Location - (this->GetActorForwardVector() * TeleportEntryMargin)));
+
+				// Represents the distance from the entry point to the exit point of an object
 				FVector TeleportDistance = ReverseHit.Location - LineHit.Location;
-				FVector TeleportAmount = TeleportDistance + (this->GetActorForwardVector() * TeleportMargin);
-				// Teleport arrow to new location
+				// Calculate where projectile should go including the exit margin
+				FVector TeleportAmount = TeleportDistance + (this->GetActorForwardVector() * TeleportExitMargin);
+				// Teleport projectile to new location
 				ProjectileMovement->MoveUpdatedComponent(TeleportAmount, this->GetActorRotation(), false,
 				                                         nullptr, ETeleportType::TeleportPhysics);
-				// Spawn Black hole after teleport
+				
 				SpawnBlackHole(FTransform(GetActorLocation()));
 			}
 		}

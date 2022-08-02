@@ -28,7 +28,7 @@ protected:
 	FCollisionProfileName CollisionProfile;
 
 	UPROPERTY(EditDefaultsOnly)
-	FVector ProjectileSize = FVector(45,1,1);
+	FVector ProjectileSize = FVector(40,1,1);
 
 public:
 	AFletchedProjectile();

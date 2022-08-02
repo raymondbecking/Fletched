@@ -18,17 +18,19 @@ class FLETCHED_API ABlackHoleProjectile : public AFletchedProjectile
 	UPROPERTY(VisibleDefaultsOnly, Category=BlackHoleProjectile)
 	UBoxComponent* DetectorComp;
 
-	/** Distance from where an object to teleport through should be detected **/
+	/** Maximum object thickness in cm the projectile can teleport through **/
 	UPROPERTY(EditDefaultsOnly, Category=BlackHoleProjectile)
-	FVector DetectorOffset = FVector(60,1,1);
+	float MaxPierceThickness = 500.f;
 
-	/** Maximum object thickness the projectile can teleport through **/
+	/** How far from the entry point the black hole should appear
+	  *(Note: this does not have an effect on the distance from where the projectile teleports,
+	  *This is decided by position and size of the detector component)**/
 	UPROPERTY(EditDefaultsOnly, Category=BlackHoleProjectile)
-	float MaxPierceThickness = 200.f;
-
+	float TeleportEntryMargin = 0.f;
+	
 	/** How far from the exit point the projectile should teleport **/
 	UPROPERTY(EditDefaultsOnly, Category=BlackHoleProjectile)
-	float TeleportMargin = 60.f;
+	float TeleportExitMargin = 30.f;
 
     /** Teleports projectile past the actor if the reverse LineTrace hits the passed actor **/
 	UFUNCTION()
@@ -36,15 +38,16 @@ class FLETCHED_API ABlackHoleProjectile : public AFletchedProjectile
 
 	/** Effect to spawn **/
 	UPROPERTY(EditDefaultsOnly, Category=BlackHoleProjectile)
-	TSubclassOf<class AActor> BlackHoleEffectClass;
+	TSubclassOf<AActor> BlackHoleEffectClass;
 
 	/** Spawns Black Hole at specified transform **/
 	UFUNCTION()
 	void SpawnBlackHole(const FTransform SpawnTransform);
 
-	/** Time until the black hole should disappear **/
+	/** Time until the black hole should disappear
+	 * TODO: Extend BlackHole FX timeline based on this value **/
 	UPROPERTY(EditDefaultsOnly, Category=BlackHoleProjectile)
-	float BlackHoleLifeSpan = 1.f;
+	float BlackHoleLifeSpan = .5f;
 	
 public:
 	ABlackHoleProjectile();
