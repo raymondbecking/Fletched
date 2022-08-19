@@ -78,7 +78,7 @@ Content/AssetPacks/*
 
 #Effects & Models
 Content/SFX/*
-Content/FX/*
+# Content/FX/*
 Content/Meshes/*
 Content/MSPresets/*
 Content/Megascans/*
