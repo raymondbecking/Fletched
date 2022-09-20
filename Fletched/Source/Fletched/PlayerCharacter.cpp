@@ -188,7 +188,7 @@ void APlayerCharacter::MoveRight(float Value)
 	}
 }
 
-/** Overridden CanJumpInternal to not disallow jumping from crouched state */
+/** Overridden CanJumpInternal to allow jumping from crouched state */
 bool APlayerCharacter::CanJumpInternal_Implementation() const
 {
 	return JumpIsAllowedInternal();
@@ -238,7 +238,6 @@ void APlayerCharacter::Slide()
 
 	//Dot product of the Directional Velocity and the Characters rotation to calculate the characters moving direction (forward/backward)
 	float CharacterDirection = FVector::DotProduct(CharacterVelocity, this->GetActorForwardVector());
-	//UE_LOG(LogTemp, Warning, TEXT("Moving Direction : %f"), CharacterDirection);
 
 	//Allow sliding if character is moving forward
 	if (CharacterDirection > 0)

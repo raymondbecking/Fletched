@@ -79,10 +79,13 @@ void ABlackHoleProjectile::TeleportProjectile(AActor* TeleportActor)
 	GetWorld()->LineTraceMultiByChannel(LineHitReverse, TraceEnd, TraceStart, ECC_Visibility);
 
 	for (FHitResult ReverseHit : LineHitReverse)
-	{		
+	{
 		// Make sure that the projectile only teleports past the actor that was hit
 		if (ReverseHit.GetActor() == TeleportActor)
 		{
+			DrawDebugLine(GetWorld(), ReverseHit.Location,
+				  ReverseHit.Location + (this->GetActorForwardVector() * 50), FColor(255, 0, 0),
+				  false, 10.f, 0, 5.f);
 			if (ProjectileMovement != nullptr)
 			{
 				SpawnBlackHole(FTransform(LineHit.Location - (this->GetActorForwardVector() * TeleportEntryMargin)));
