@@ -3,6 +3,8 @@
 
 #include "ProceduralRoom.h"
 #include "DrawDebugHelpers.h"
+#include "Floor.h"
+#include "FloorNode.h"
 
 // Sets default values
 AProceduralRoom::AProceduralRoom()
@@ -10,8 +12,8 @@ AProceduralRoom::AProceduralRoom()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	Floor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorComponent"));
-	SetRootComponent(Floor);
+	FloorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorMesh"));
+	SetRootComponent(FloorMesh);
 
 	GridSizeX = 5;
 	GridSizeY = 5;
@@ -31,8 +33,10 @@ void AProceduralRoom::BeginPlay()
 {
 	Super::BeginPlay();
 
-	CreateGrid();
-	PlacePointsOnGrid();
+	TSharedPtr<Floor> TheFloor(new Floor());
+	TheFloor->Partition();
+
+	UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheFloor->GetPartitionedFloor().Num());
 }
 
 // Called every frame

@@ -25,7 +25,7 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Room, meta = (AllowPrivateAccess=true))
-	TObjectPtr<UStaticMeshComponent> Floor;
+	TObjectPtr<UStaticMeshComponent> FloorMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Room, meta = (AllowPrivateAccess=true))
 	TSubclassOf<AActor> ChairClass;
