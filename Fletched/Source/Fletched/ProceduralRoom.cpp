@@ -36,6 +36,8 @@ void AProceduralRoom::BeginPlay()
 	TSharedPtr<Floor> TheFloor(new Floor());
 	TheFloor->Partition();
 
+	TheFloor->DrawFloorNodes(GetWorld());
+
 	UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheFloor->GetPartitionedFloor().Num());
 }
 

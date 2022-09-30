@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "FloorNode.h"
 
 enum class ESplitOrientation
 {
@@ -6,7 +7,7 @@ enum class ESplitOrientation
 	ESO_Vertical
 };
 
-class FloorNode;
+class UWorld;
 
 class Floor
 {
@@ -16,10 +17,14 @@ public:
 
 	void Partition();
 	int32 CoinFlip();
+	float DiceRoll();
 	bool ShouldSplitNode(TSharedPtr<FloorNode> InNode, ESplitOrientation Orientation);
 	bool SplitAttempt(TSharedPtr<FloorNode> InNode);
 	void SplitHorizontal(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, TSharedPtr<FloorNode> InC);
 	void SplitVertical(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, TSharedPtr<FloorNode> InC);
+
+	void DrawFloorNodes(TObjectPtr<UWorld> World);
+	void DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates);
 
 	FORCEINLINE TArray<TSharedPtr<FloorNode>> GetPartitionedFloor() const { return PartitionedFloor; }
 
@@ -31,5 +36,9 @@ private:
 	int32 FloorGridSizeY;
 	int32 RoomMinX;
 	int32 RoomMinY;
+
+	float UnitLength;
+
+	float SplitChance;
 	
 };

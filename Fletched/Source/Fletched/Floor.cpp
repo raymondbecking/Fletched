@@ -1,12 +1,18 @@
 ﻿#include "Floor.h"
 #include "FloorNode.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/World.h"
 
 Floor::Floor()
 {
-	FloorGridSizeX = 5;
-	FloorGridSizeY = 5;
-	RoomMinX = 1;
-	RoomMinY = 1;
+	FloorGridSizeX = 50;
+	FloorGridSizeY = 50;
+	RoomMinX = 2;
+	RoomMinY = 2;
+
+	UnitLength = 100.f;
+
+	SplitChance = 1.3f;
 
 	UE_LOG(LogTemp, Warning, TEXT("Floor created."));
 
@@ -40,6 +46,11 @@ int32 Floor::CoinFlip()
 	return FMath::RandRange(0,1);
 }
 
+float Floor::DiceRoll()
+{
+	return FMath::FRandRange(0.f, 1.f);
+}
+
 bool Floor::ShouldSplitNode(TSharedPtr<FloorNode> InNode, ESplitOrientation Orientation)
 {
 	FCornerCoordinates CornerCoordinates = InNode->GetCornerCoordinates();
@@ -47,8 +58,15 @@ bool Floor::ShouldSplitNode(TSharedPtr<FloorNode> InNode, ESplitOrientation Orie
 	if(Orientation == ESplitOrientation::ESO_Horizontal)
 	{
 		int32 FloorLength = CornerCoordinates.LowerRightY - CornerCoordinates.UpperLeftY;
+		float PercentChanceOfSplit = (float)FloorLength / (float)FloorGridSizeY;
+		PercentChanceOfSplit *= SplitChance;
 
-		if(FloorLength > RoomMinY)
+		if(DiceRoll() > PercentChanceOfSplit)
+		{
+			return false;
+		}
+
+		if(FloorLength >= 2 * RoomMinY)
 		{
 			return true;
 		}
@@ -57,8 +75,15 @@ bool Floor::ShouldSplitNode(TSharedPtr<FloorNode> InNode, ESplitOrientation Orie
 	else if(Orientation == ESplitOrientation::ESO_Vertical)
 	{
 		int32 FloorWidth = CornerCoordinates.LowerRightX - CornerCoordinates.UpperLeftX;
+		float PercentChanceOfSplit = (float)FloorWidth / (float)FloorGridSizeX;
+		PercentChanceOfSplit *= SplitChance;
 
-		if(FloorWidth > RoomMinX)
+		if(DiceRoll() > PercentChanceOfSplit)
+		{
+			return false;
+		}
+		
+		if(FloorWidth >= 2 * RoomMinX)
 		{
 			return true;
 		}
@@ -162,4 +187,27 @@ void Floor::SplitVertical(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, 
 
 	InC->SetCornerCoordinates(CornerCoordinatesC);
 	FloorNodeStack.Push(InC);
+}
+
+void Floor::DrawFloorNodes(TObjectPtr<UWorld> World)
+{
+	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
+	{
+		FCornerCoordinates Coordinates = PartitionedFloor[i]->GetCornerCoordinates();
+		DrawFloorNode(World, Coordinates);
+	}
+}
+
+void Floor::DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates)
+{
+	const FVector UpperLeft(Coordinates.UpperLeftX * UnitLength, Coordinates.UpperLeftY * UnitLength, 0.f);
+	const FVector UpperRight(Coordinates.LowerRightX * UnitLength, Coordinates.UpperLeftY * UnitLength, 0.f);
+	const FVector LowerLeft(Coordinates.UpperLeftX * UnitLength, Coordinates.LowerRightY * UnitLength, 0.f);
+	const FVector LowerRight(Coordinates.LowerRightX * UnitLength, Coordinates.LowerRightY * UnitLength, 0.f);
+	
+	DrawDebugLine(World, UpperLeft, UpperRight, FColor::Blue, true, -1, 0, 2.5f);
+	DrawDebugLine(World, UpperRight, LowerRight, FColor::Blue, true, -1, 0, 2.5f);
+	DrawDebugLine(World, LowerRight, LowerLeft, FColor::Blue, true, -1, 0, 2.5f);
+	DrawDebugLine(World, LowerLeft, UpperLeft, FColor::Blue, true, -1, 0, 2.5f);
+	
 }
