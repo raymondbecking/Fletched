@@ -22,7 +22,8 @@ public:
 	bool SplitAttempt(TSharedPtr<FloorNode> InNode);
 	void SplitHorizontal(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, TSharedPtr<FloorNode> InC);
 	void SplitVertical(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, TSharedPtr<FloorNode> InC);
-
+	FCornerCoordinates ResizeRoom(FCornerCoordinates Coordinates, float ResizePercent);
+	
 	void DrawFloorNodes(TObjectPtr<UWorld> World);
 	void DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates);
 
@@ -40,5 +41,7 @@ private:
 	float UnitLength;
 
 	float SplitChance;
+
+	float MinRoomSizePercent;
 	
 };

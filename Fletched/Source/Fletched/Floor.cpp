@@ -5,14 +5,16 @@
 
 Floor::Floor()
 {
-	FloorGridSizeX = 50;
-	FloorGridSizeY = 50;
-	RoomMinX = 2;
-	RoomMinY = 2;
+	FloorGridSizeX = 200;
+	FloorGridSizeY = 200;
+	RoomMinX = 20;
+	RoomMinY = 20;
 
 	UnitLength = 100.f;
 
 	SplitChance = 1.3f;
+
+	MinRoomSizePercent = 0.65f;
 
 	UE_LOG(LogTemp, Warning, TEXT("Floor created."));
 
@@ -189,10 +191,35 @@ void Floor::SplitVertical(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, 
 	FloorNodeStack.Push(InC);
 }
 
+FCornerCoordinates Floor::ResizeRoom(FCornerCoordinates Coordinates, float ResizePercent)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Resize : %f %"), ResizePercent);
+	float ResizedWidth = ((float)Coordinates.LowerRightX - (float)Coordinates.UpperLeftX) * ResizePercent;
+	float ResizedHeight = ((float)Coordinates.LowerRightY - (float)Coordinates.UpperLeftY) * ResizePercent;
+	//UE_LOG(LogTemp, Warning, TEXT("Width: %f"), ResizedWidth);
+	//UE_LOG(LogTemp, Warning, TEXT("Height: %f"), ResizedHeight);
+
+	
+	FCornerCoordinates ResizedCoordinates = Coordinates;
+	ResizedCoordinates.UpperLeftX += ResizedWidth;
+	ResizedCoordinates.UpperLeftY += ResizedHeight;
+	ResizedCoordinates.LowerRightX -= ResizedWidth;
+	ResizedCoordinates.LowerRightY -= ResizedHeight;
+	return ResizedCoordinates;
+}
+
 void Floor::DrawFloorNodes(TObjectPtr<UWorld> World)
 {
 	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
 	{
+		FCornerCoordinates Coordinates = PartitionedFloor[i]->GetCornerCoordinates();
+		DrawFloorNode(World, Coordinates);
+
+		float ResizePercent = FMath::RandRange(MinRoomSizePercent, 1.f);
+		PartitionedFloor[i]->SetCornerCoordinates(ResizeRoom(Coordinates, ResizePercent));
+	}
+	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
+	{		
 		FCornerCoordinates Coordinates = PartitionedFloor[i]->GetCornerCoordinates();
 		DrawFloorNode(World, Coordinates);
 	}
@@ -205,9 +232,9 @@ void Floor::DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinat
 	const FVector LowerLeft(Coordinates.UpperLeftX * UnitLength, Coordinates.LowerRightY * UnitLength, 0.f);
 	const FVector LowerRight(Coordinates.LowerRightX * UnitLength, Coordinates.LowerRightY * UnitLength, 0.f);
 	
-	DrawDebugLine(World, UpperLeft, UpperRight, FColor::Blue, true, -1, 0, 2.5f);
-	DrawDebugLine(World, UpperRight, LowerRight, FColor::Blue, true, -1, 0, 2.5f);
-	DrawDebugLine(World, LowerRight, LowerLeft, FColor::Blue, true, -1, 0, 2.5f);
-	DrawDebugLine(World, LowerLeft, UpperLeft, FColor::Blue, true, -1, 0, 2.5f);
+	DrawDebugLine(World, UpperLeft, UpperRight, FColor::Blue, true, -1, 0, 5.f);
+	DrawDebugLine(World, UpperRight, LowerRight, FColor::Blue, true, -1, 0, 5.f);
+	DrawDebugLine(World, LowerRight, LowerLeft, FColor::Blue, true, -1, 0, 5.f);
+	DrawDebugLine(World, LowerLeft, UpperLeft, FColor::Blue, true, -1, 0, 5.f);
 	
 }
