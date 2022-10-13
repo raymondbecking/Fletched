@@ -25,13 +25,19 @@ public:
 	FCornerCoordinates ResizeRoom(FCornerCoordinates Coordinates, float ResizePercent);
 	
 	void DrawFloorNodes(TObjectPtr<UWorld> World);
-	void DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates);
+	void DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor);
+
+	void CreateHallways(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeToConnect);
+	void CalculateOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
+	                      int32 &OverlapStart, int32 &OverlapEnd);
 
 	FORCEINLINE TArray<TSharedPtr<FloorNode>> GetPartitionedFloor() const { return PartitionedFloor; }
 
 private:
 	TArray<TSharedPtr<FloorNode>> FloorNodeStack;
 	TArray<TSharedPtr<FloorNode>> PartitionedFloor;
+	TArray<TSharedPtr<FloorNode>> NodesASide;
+	TArray<TSharedPtr<FloorNode>> NodesBSide;
 
 	int32 FloorGridSizeX;
 	int32 FloorGridSizeY;
