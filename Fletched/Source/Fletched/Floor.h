@@ -27,7 +27,10 @@ public:
 	void DrawFloorNodes(TObjectPtr<UWorld> World);
 	void DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor);
 
-	void CreateHallways(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeToConnect);
+	void ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNode);
+	TSharedPtr<FloorNode> FindRoot(TSharedPtr<FloorNode> InNode);
+	
+	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB);
 	void CalculateOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
 	                      int32 &OverlapStart, int32 &OverlapEnd);
 
@@ -36,8 +39,7 @@ public:
 private:
 	TArray<TSharedPtr<FloorNode>> FloorNodeStack;
 	TArray<TSharedPtr<FloorNode>> PartitionedFloor;
-	TArray<TSharedPtr<FloorNode>> NodesASide;
-	TArray<TSharedPtr<FloorNode>> NodesBSide;
+
 
 	int32 FloorGridSizeX;
 	int32 FloorGridSizeY;
@@ -49,5 +51,7 @@ private:
 	float SplitChance;
 
 	float MinRoomSizePercent;
+
+	int32 HallwayMinWidth;
 	
 };
