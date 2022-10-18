@@ -31,6 +31,9 @@ public:
 
 	FORCEINLINE ESplitOrientation GetSplitOrientation() const { return SplitOrientation; }
 	FORCEINLINE void SetSplitOrientation(ESplitOrientation Orientation) { SplitOrientation = Orientation; }
+
+	FORCEINLINE TSharedPtr<FloorNode> GetHallwayNode() const { return HallwayNode; }
+	FORCEINLINE void SetHallwayNode(TSharedPtr<FloorNode> Hallway) { HallwayNode = Hallway; }
 private:
 	FCornerCoordinates CornerCoordinates;
 
@@ -39,6 +42,7 @@ private:
 	TSharedPtr<FloorNode> ParentNode;
 	TSharedPtr<FloorNode> ChildNodeA;
 	TSharedPtr<FloorNode> ChildNodeB;
+	TSharedPtr<FloorNode> HallwayNode;
 
 	ESplitOrientation SplitOrientation;
 	

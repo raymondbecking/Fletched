@@ -17,7 +17,7 @@ Floor::Floor()
 
 	MinRoomSizePercent = 0.6f;
 
-	HallwayMinWidth = 6;
+	HallwayMinWidth = 2;
 
 	UE_LOG(LogTemp, Warning, TEXT("Floor created."));
 
@@ -222,33 +222,36 @@ FCornerCoordinates Floor::ResizeRoom(FCornerCoordinates Coordinates, float Resiz
 }
 
 void Floor::DrawFloorNodes(TObjectPtr<UWorld> World)
-{
+{	
 	//Connect all nodes with hallways
 	ConnectNodes(World, FindRoot(PartitionedFloor[0]));
 	
+	//Resize all rooms
 	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
 	{
 		FCornerCoordinates Coordinates = PartitionedFloor[i]->GetCornerCoordinates();
-		//DrawFloorNode(World, Coordinates, FColor::Green);
 
 		float ResizePercent = FMath::RandRange(MinRoomSizePercent, 1.f);
-		PartitionedFloor[i]->SetCornerCoordinates(ResizeRoom(Coordinates, ResizePercent));
+		Coordinates = ResizeRoom(Coordinates, ResizePercent);
+		PartitionedFloor[i]->SetCornerCoordinates(Coordinates);
+		DrawFloorNode(World, Coordinates, FColor::Blue);
 	}
+	
 	//Temporary separate loop to draw both the resized room as the original node
-	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
+	/*for (int32 i = 0; i < PartitionedFloor.Num(); i++)
 	{		
 		FCornerCoordinates Coordinates = PartitionedFloor[i]->GetCornerCoordinates();
 		DrawFloorNode(World, Coordinates, FColor::Blue);
-	}
+	}*/
 	//Temporary separate loop to draw parent nodes
-	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
+	/*for (int32 i = 0; i < PartitionedFloor.Num(); i++)
 	{
 		if(PartitionedFloor[i]->GetParentNode() != nullptr)
 		{
 			FCornerCoordinates Coordinates = PartitionedFloor[i]->GetParentNode()->GetCornerCoordinates();
 			DrawFloorNode(World, Coordinates, FColor::Red);				
 		}
-	}
+	}*/
 }
 
 void Floor::DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor)
@@ -291,26 +294,44 @@ TSharedPtr<FloorNode> Floor::FindRoot(TSharedPtr<FloorNode> InNode)
 void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Creating Hallway"));
+
+	TSharedPtr<FloorNode> HallwayNode(new FloorNode());
+	
 	//TODO: Instead of using FCoordinates, create new FloorNode with the following coordinates
 	FCornerCoordinates HallwayCornerCoordinates;
+	
+	//Get the center coordinates of Node A and B
+	int32 NodeACenterX = (NodeA->GetCornerCoordinates().LowerRightX + NodeA->GetCornerCoordinates().UpperLeftX) / 2;
+	int32 NodeACenterY = (NodeA->GetCornerCoordinates().LowerRightY + NodeA->GetCornerCoordinates().UpperLeftY) / 2;
+	int32 NodeBCenterX = (NodeB->GetCornerCoordinates().LowerRightX + NodeB->GetCornerCoordinates().UpperLeftX) / 2;
+	int32 NodeBCenterY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;	
+	
+	int32 HallwayRadius = HallwayMinWidth / 2;
+
+	//Shorter ternary version maybe not so useful, there might be more differentiation needed based on split orientation
+	/*const bool IsSplitHorizontal = NodeA->GetSplitOrientation() == ESplitOrientation::ESO_Horizontal;
+	HallwayCornerCoordinates.UpperLeftX = (IsSplitHorizontal) ? NodeACenterX - HallwayRadius : NodeACenterX;
+	HallwayCornerCoordinates.UpperLeftY = (IsSplitHorizontal) ? NodeACenterY : NodeACenterY - HallwayRadius;
+	HallwayCornerCoordinates.LowerRightX = (IsSplitHorizontal) ? NodeBCenterX + HallwayRadius : NodeBCenterX;
+	HallwayCornerCoordinates.LowerRightY = (IsSplitHorizontal) ? NodeBCenterY : NodeBCenterY + HallwayRadius;*/
 	if(NodeA->GetSplitOrientation() == ESplitOrientation::ESO_Horizontal)
 	{
-		//Get the center coordinates of Node A and B
-		HallwayCornerCoordinates.UpperLeftX = (NodeA->GetCornerCoordinates().LowerRightX + NodeA->GetCornerCoordinates().UpperLeftX) / 2;
-		HallwayCornerCoordinates.UpperLeftY = (NodeA->GetCornerCoordinates().LowerRightY + NodeA->GetCornerCoordinates().UpperLeftY) / 2;
-		HallwayCornerCoordinates.LowerRightX = (NodeB->GetCornerCoordinates().LowerRightX + NodeB->GetCornerCoordinates().UpperLeftX) / 2;
-		HallwayCornerCoordinates.LowerRightY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;
-	}
-	else
+		HallwayCornerCoordinates.UpperLeftX = NodeACenterX - HallwayRadius;
+		HallwayCornerCoordinates.UpperLeftY = NodeACenterY;
+		HallwayCornerCoordinates.LowerRightX = NodeBCenterX + HallwayRadius;
+		HallwayCornerCoordinates.LowerRightY = NodeBCenterY;
+	}else
 	{
-		//Get the center coordinates of Node A and B
-		HallwayCornerCoordinates.UpperLeftX = (NodeA->GetCornerCoordinates().LowerRightX + NodeA->GetCornerCoordinates().UpperLeftX) / 2;
-		HallwayCornerCoordinates.UpperLeftY = (NodeA->GetCornerCoordinates().LowerRightY + NodeA->GetCornerCoordinates().UpperLeftY) / 2;
-		HallwayCornerCoordinates.LowerRightX = (NodeB->GetCornerCoordinates().LowerRightX + NodeB->GetCornerCoordinates().UpperLeftX) / 2;
-		HallwayCornerCoordinates.LowerRightY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;
+		HallwayCornerCoordinates.UpperLeftX = NodeACenterX;
+		HallwayCornerCoordinates.UpperLeftY = NodeACenterY - HallwayRadius;
+		HallwayCornerCoordinates.LowerRightX = NodeBCenterX;
+		HallwayCornerCoordinates.LowerRightY = NodeBCenterY + HallwayRadius;
 	}
+	
+	HallwayNode->SetCornerCoordinates(HallwayCornerCoordinates);
+	//Should Parent node also be the hallways parent? 
+	NodeA->GetParentNode()->SetHallwayNode(HallwayNode);
 	DrawFloorNode(World, HallwayCornerCoordinates, FColor::Black);
-	//TODO: Make Parent own this newly created hallway
 }
 
 //Unused
