@@ -51,6 +51,7 @@ private:
 	float SplitChance;
 
 	float MinRoomSizePercent;
+	float MaxRoomSizePercent;
 
 	int32 HallwayMinWidth;
 	

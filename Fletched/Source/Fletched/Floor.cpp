@@ -8,14 +8,15 @@ Floor::Floor()
 {
 	FloorGridSizeX = 200;
 	FloorGridSizeY = 200;
-	RoomMinX = 20;
-	RoomMinY = 20;
+	RoomMinX = 10;
+	RoomMinY = 10;
 
 	UnitLength = 100.f;
 
 	SplitChance = 1.3f;
 
-	MinRoomSizePercent = 0.6f;
+	MinRoomSizePercent = 0.55f;
+	MaxRoomSizePercent = 0.9f;
 
 	HallwayMinWidth = 2;
 
@@ -208,34 +209,37 @@ void Floor::SplitVertical(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, 
 
 FCornerCoordinates Floor::ResizeRoom(FCornerCoordinates Coordinates, float ResizePercent)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Resize : %f %"), ResizePercent);
-	float ResizedWidth = ((float)Coordinates.LowerRightX - (float)Coordinates.UpperLeftX) * ResizePercent;
-	float ResizedHeight = ((float)Coordinates.LowerRightY - (float)Coordinates.UpperLeftY) * ResizePercent;
+	//Calculate new length of each side of the square
+	int32 ResizedWidth = (Coordinates.LowerRightX - Coordinates.UpperLeftX) * ResizePercent;
+	int32 ResizedHeight = (Coordinates.LowerRightY - Coordinates.UpperLeftY) * ResizePercent;
 
+	//Calculate how much to move each corner
+	int32 ResizedXCoordinate = (Coordinates.LowerRightX - Coordinates.UpperLeftX - ResizedWidth) / 2;
+	int32 ResizedYCoordinate = (Coordinates.LowerRightY - Coordinates.UpperLeftY - ResizedHeight) / 2;
 	
 	FCornerCoordinates ResizedCoordinates = Coordinates;
-	ResizedCoordinates.UpperLeftX += ResizedWidth;
-	ResizedCoordinates.UpperLeftY += ResizedHeight;
-	ResizedCoordinates.LowerRightX -= ResizedWidth;
-	ResizedCoordinates.LowerRightY -= ResizedHeight;
+	ResizedCoordinates.UpperLeftX += ResizedXCoordinate;
+	ResizedCoordinates.UpperLeftY += ResizedYCoordinate;
+	ResizedCoordinates.LowerRightX -= ResizedXCoordinate;
+	ResizedCoordinates.LowerRightY -= ResizedYCoordinate;
 	return ResizedCoordinates;
 }
 
 void Floor::DrawFloorNodes(TObjectPtr<UWorld> World)
 {	
 	//Connect all nodes with hallways
-	ConnectNodes(World, FindRoot(PartitionedFloor[0]));
 	
 	//Resize all rooms
 	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
 	{
 		FCornerCoordinates Coordinates = PartitionedFloor[i]->GetCornerCoordinates();
 
-		float ResizePercent = FMath::RandRange(MinRoomSizePercent, 1.f);
+		float ResizePercent = FMath::RandRange(MinRoomSizePercent, MaxRoomSizePercent);
 		Coordinates = ResizeRoom(Coordinates, ResizePercent);
 		PartitionedFloor[i]->SetCornerCoordinates(Coordinates);
 		DrawFloorNode(World, Coordinates, FColor::Blue);
 	}
+	ConnectNodes(World, FindRoot(PartitionedFloor[0]));
 	
 	//Temporary separate loop to draw both the resized room as the original node
 	/*for (int32 i = 0; i < PartitionedFloor.Num(); i++)
@@ -296,8 +300,6 @@ void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA,
 	UE_LOG(LogTemp, Warning, TEXT("Creating Hallway"));
 
 	TSharedPtr<FloorNode> HallwayNode(new FloorNode());
-	
-	//TODO: Instead of using FCoordinates, create new FloorNode with the following coordinates
 	FCornerCoordinates HallwayCornerCoordinates;
 	
 	//Get the center coordinates of Node A and B
@@ -307,6 +309,7 @@ void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA,
 	int32 NodeBCenterY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;	
 	
 	int32 HallwayRadius = HallwayMinWidth / 2;
+	int32 HallwayRandomPos = FMath::RandRange(-5,5);
 
 	//Shorter ternary version maybe not so useful, there might be more differentiation needed based on split orientation
 	/*const bool IsSplitHorizontal = NodeA->GetSplitOrientation() == ESplitOrientation::ESO_Horizontal;
@@ -316,16 +319,16 @@ void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA,
 	HallwayCornerCoordinates.LowerRightY = (IsSplitHorizontal) ? NodeBCenterY : NodeBCenterY + HallwayRadius;*/
 	if(NodeA->GetSplitOrientation() == ESplitOrientation::ESO_Horizontal)
 	{
-		HallwayCornerCoordinates.UpperLeftX = NodeACenterX - HallwayRadius;
+		HallwayCornerCoordinates.UpperLeftX = NodeACenterX - HallwayRadius + HallwayRandomPos;
 		HallwayCornerCoordinates.UpperLeftY = NodeACenterY;
-		HallwayCornerCoordinates.LowerRightX = NodeBCenterX + HallwayRadius;
+		HallwayCornerCoordinates.LowerRightX = NodeBCenterX + HallwayRadius + HallwayRandomPos;
 		HallwayCornerCoordinates.LowerRightY = NodeBCenterY;
 	}else
 	{
 		HallwayCornerCoordinates.UpperLeftX = NodeACenterX;
-		HallwayCornerCoordinates.UpperLeftY = NodeACenterY - HallwayRadius;
+		HallwayCornerCoordinates.UpperLeftY = NodeACenterY - HallwayRadius + HallwayRandomPos;
 		HallwayCornerCoordinates.LowerRightX = NodeBCenterX;
-		HallwayCornerCoordinates.LowerRightY = NodeBCenterY + HallwayRadius;
+		HallwayCornerCoordinates.LowerRightY = NodeBCenterY + HallwayRadius + HallwayRandomPos;
 	}
 	
 	HallwayNode->SetCornerCoordinates(HallwayCornerCoordinates);
