@@ -27,9 +27,8 @@ public:
 	void DrawFloorNodes(TObjectPtr<UWorld> World);
 	void DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor);
 
-	void ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNode);
-	TSharedPtr<FloorNode> FindRoot(TSharedPtr<FloorNode> InNode);
-	
+	void ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNode);	
+	void ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, ESplitOrientation PreferredOrientation);
 	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB);
 	
 	TSharedPtr<FloorNode> FindRootNode(TSharedPtr<FloorNode> InNode);
