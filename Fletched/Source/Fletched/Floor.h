@@ -31,9 +31,12 @@ public:
 	TSharedPtr<FloorNode> FindRoot(TSharedPtr<FloorNode> InNode);
 	
 	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB);
-	void CalculateOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
+	
+	TSharedPtr<FloorNode> FindRootNode(TSharedPtr<FloorNode> InNode);
+	bool CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
 	                      int32 &OverlapStart, int32 &OverlapEnd);
-
+	int32 DistanceBetweenNodes(TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB);
+	
 	FORCEINLINE TArray<TSharedPtr<FloorNode>> GetPartitionedFloor() const { return PartitionedFloor; }
 
 private:

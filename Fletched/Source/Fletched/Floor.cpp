@@ -337,13 +337,40 @@ void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA,
 	DrawFloorNode(World, HallwayCornerCoordinates, FColor::Black);
 }
 
-//Unused
-void Floor::CalculateOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
-	int32 &OverlapStart, int32 &OverlapEnd)
+TSharedPtr<FloorNode> Floor::FindRootNode(TSharedPtr<FloorNode> InNode)
+{
+	if (InNode->GetParentNode() != nullptr)
+	{
+		return FindRootNode(InNode->GetParentNode());
+	}
+	return InNode;
+}
+
+bool Floor::CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
+                                int32& OverlapStart, int32& OverlapEnd)
 {
 	OverlapStart = TMathUtil<int32>::Min(LineStartA, LineStartB);
 	OverlapEnd = TMathUtil<int32>::Max(LineEndA, LineEndB);
+	return OverlapEnd - OverlapStart > 0;
 }
+
+int32 Floor::DistanceBetweenNodes(TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB)
+{
+	if (NodeA == nullptr || NodeB == nullptr)
+	{
+		return 0;
+	}
+	float NodeACenterX = (NodeA->GetCornerCoordinates().LowerRightX + NodeA->GetCornerCoordinates().UpperLeftX) / 2;
+	float NodeACenterY = (NodeA->GetCornerCoordinates().LowerRightY + NodeA->GetCornerCoordinates().UpperLeftY) / 2;
+	FVector2f NodeACenter = FVector2f(NodeACenterX, NodeACenterY);
+
+	float NodeBCenterX = (NodeB->GetCornerCoordinates().LowerRightX + NodeB->GetCornerCoordinates().UpperLeftX) / 2;
+	float NodeBCenterY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;
+	FVector2f NodeBCenter = FVector2f(NodeBCenterX, NodeBCenterY);
+
+	return FVector2f::Distance(NodeACenter, NodeBCenter);
+}
+
 
 
 
