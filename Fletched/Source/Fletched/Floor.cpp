@@ -386,11 +386,12 @@ TSharedPtr<FloorNode> Floor::FindRootNode(TSharedPtr<FloorNode> InNode)
 	return InNode;
 }
 
+/** Not actual overlap is calculated, but rather what part of 2 sides of different nodes align **/
 bool Floor::CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
                                 int32& OverlapStart, int32& OverlapEnd)
 {
-	OverlapStart = TMathUtil<int32>::Min(LineStartA, LineStartB);
-	OverlapEnd = TMathUtil<int32>::Max(LineEndA, LineEndB);
+	OverlapStart = TMathUtil<int32>::Max(LineStartA, LineStartB);
+	OverlapEnd = TMathUtil<int32>::Min(LineEndA, LineEndB);
 	return OverlapEnd - OverlapStart > 0;
 }
 
