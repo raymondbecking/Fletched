@@ -29,7 +29,7 @@ public:
 
 	void ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNode);	
 	void ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, ESplitOrientation PreferredOrientation);
-	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB);
+	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, int32 OverlapStart, int32 OverlapEnd);
 	
 	TSharedPtr<FloorNode> FindRootNode(TSharedPtr<FloorNode> InNode);
 	bool CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,

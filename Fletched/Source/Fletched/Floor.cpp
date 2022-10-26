@@ -15,7 +15,7 @@ Floor::Floor()
 
 	SplitChance = 1.3f;
 
-	MinRoomSizePercent = 0.55f;
+	MinRoomSizePercent = 0.3f;
 	MaxRoomSizePercent = 0.9f;
 
 	HallwayMinWidth = 2;
@@ -293,7 +293,7 @@ void Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA
 				                                 NodeB->GetCornerCoordinates().UpperLeftX,
 				                                 NodeB->GetCornerCoordinates().LowerRightX, OverlapStart, OverlapEnd);
 			}
-			else if (PreferredOrientation == ESplitOrientation::ESO_Vertical)
+			else// if (PreferredOrientation == ESplitOrientation::ESO_Vertical)
 			{
 				HasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().UpperLeftY,
 				                                 NodeA->GetCornerCoordinates().LowerRightY,
@@ -302,15 +302,26 @@ void Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA
 			}
 			if (HasOverlap)
 			{
-				//TODO: Pass the overlap to Create Hallway
 				//Connect the matching nodes
-				CreateHallway(World, NodeA, NodeB);
+				CreateHallway(World, NodeA, NodeB, OverlapStart, OverlapEnd);
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("NO OVERLAP"));
+				//Temporary DebugLine to display the nodes that weren't able to connect 
+				float NodeACenterX = (NodeA->GetCornerCoordinates().LowerRightX + NodeA->GetCornerCoordinates().UpperLeftX) / 2;
+				float NodeACenterY = (NodeA->GetCornerCoordinates().LowerRightY + NodeA->GetCornerCoordinates().UpperLeftY) / 2;
+				const FVector NodeACenter(NodeACenterX * UnitLength, NodeACenterY * UnitLength, 0.f);
+
+				float NodeBCenterX = (NodeB->GetCornerCoordinates().LowerRightX + NodeB->GetCornerCoordinates().UpperLeftX) / 2;
+				float NodeBCenterY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;
+				const FVector NodeBCenter(NodeBCenterX * UnitLength, NodeBCenterY * UnitLength, 0.f);
+
+				DrawDebugLine(World, NodeACenter, NodeBCenter, FColor::Black, true, -1, 0, 20.f);
+				//TODO: Go back up the tree and try a different node ?
+				UE_LOG(LogTemp, Error, TEXT("NO OVERLAP"));
 			}
 		}
+		//TODO: Instead of check  distance between centers, check distance between walls
 		//Keep going deeper in the closest node of NodeB tree to find which node to connect
 		if (DistanceBetweenNodes(NodeA, NodeB->GetChildNodeA()) < DistanceBetweenNodes(NodeA, NodeB->GetChildNodeB()))
 		{
@@ -334,47 +345,38 @@ void Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA
 	}
 }
 
-void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB)
+void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, int32 OverlapStart, int32 OverlapEnd)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Creating Hallway"));
 
 	TSharedPtr<FloorNode> HallwayNode(new FloorNode());
 	FCornerCoordinates HallwayCornerCoordinates;
-
-	//TODO: Replace hallway based on centers of both nodes with randomized hallway using the overlap
-	//Get the center coordinates of Node A and B
-	int32 NodeACenterX = (NodeA->GetCornerCoordinates().LowerRightX + NodeA->GetCornerCoordinates().UpperLeftX) / 2;
-	int32 NodeACenterY = (NodeA->GetCornerCoordinates().LowerRightY + NodeA->GetCornerCoordinates().UpperLeftY) / 2;
-	int32 NodeBCenterX = (NodeB->GetCornerCoordinates().LowerRightX + NodeB->GetCornerCoordinates().UpperLeftX) / 2;
-	int32 NodeBCenterY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;	
 	
-	int32 HallwayRadius = 0;//HallwayMinWidth / 2;
-	int32 HallwayRandomPos = 0;//FMath::RandRange(-2,2);
+	int32 HallwayRadius = HallwayMinWidth / 2;
+	int32 HallwayRandomPos = FMath::RandRange(OverlapStart + HallwayRadius,OverlapEnd - HallwayRadius);
+	FColor HallwayColor = FColor::Black;
 
-	//Shorter ternary version maybe not so useful, there might be more differentiation needed based on split orientation
-	/*const bool IsSplitHorizontal = NodeA->GetSplitOrientation() == ESplitOrientation::ESO_Horizontal;
-	HallwayCornerCoordinates.UpperLeftX = (IsSplitHorizontal) ? NodeACenterX - HallwayRadius : NodeACenterX;
-	HallwayCornerCoordinates.UpperLeftY = (IsSplitHorizontal) ? NodeACenterY : NodeACenterY - HallwayRadius;
-	HallwayCornerCoordinates.LowerRightX = (IsSplitHorizontal) ? NodeBCenterX + HallwayRadius : NodeBCenterX;
-	HallwayCornerCoordinates.LowerRightY = (IsSplitHorizontal) ? NodeBCenterY : NodeBCenterY + HallwayRadius;*/
-	if(NodeA->GetSplitOrientation() == ESplitOrientation::ESO_Horizontal)
+	if (NodeB->GetCornerCoordinates().UpperLeftY > NodeA->GetCornerCoordinates().LowerRightY)
 	{
-		HallwayCornerCoordinates.UpperLeftX = NodeACenterX - HallwayRadius + HallwayRandomPos;
-		HallwayCornerCoordinates.UpperLeftY = NodeACenterY;
-		HallwayCornerCoordinates.LowerRightX = NodeBCenterX + HallwayRadius + HallwayRandomPos;
-		HallwayCornerCoordinates.LowerRightY = NodeBCenterY;
-	}else
-	{
-		HallwayCornerCoordinates.UpperLeftX = NodeACenterX;
-		HallwayCornerCoordinates.UpperLeftY = NodeACenterY - HallwayRadius + HallwayRandomPos;
-		HallwayCornerCoordinates.LowerRightX = NodeBCenterX;
-		HallwayCornerCoordinates.LowerRightY = NodeBCenterY + HallwayRadius + HallwayRandomPos;
+		HallwayCornerCoordinates.UpperLeftX = HallwayRandomPos - HallwayRadius;
+		HallwayCornerCoordinates.UpperLeftY = NodeA->GetCornerCoordinates().LowerRightY;
+		HallwayCornerCoordinates.LowerRightX = HallwayRandomPos + HallwayRadius;
+		HallwayCornerCoordinates.LowerRightY = NodeB->GetCornerCoordinates().UpperLeftY;
+		HallwayColor = FColor::Green;		
 	}
+	else// if(NodeB->GetCornerCoordinates().UpperLeftX > NodeA->GetCornerCoordinates().LowerRightX)
+	{
+		HallwayCornerCoordinates.UpperLeftX = NodeB->GetCornerCoordinates().UpperLeftX;
+		HallwayCornerCoordinates.UpperLeftY = HallwayRandomPos - HallwayRadius;
+		HallwayCornerCoordinates.LowerRightX = NodeA->GetCornerCoordinates().LowerRightX;
+		HallwayCornerCoordinates.LowerRightY = HallwayRandomPos + HallwayRadius;
+		HallwayColor = FColor::Red;
+	}	
 	
 	HallwayNode->SetCornerCoordinates(HallwayCornerCoordinates);
 	//Should Parent node also be the hallways parent? 
 	NodeA->GetParentNode()->SetHallwayNode(HallwayNode);
-	DrawFloorNode(World, HallwayCornerCoordinates, FColor::Black);
+	DrawFloorNode(World, HallwayCornerCoordinates, HallwayColor);
 }
 
 TSharedPtr<FloorNode> Floor::FindRootNode(TSharedPtr<FloorNode> InNode)
