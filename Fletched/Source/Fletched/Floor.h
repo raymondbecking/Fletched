@@ -28,7 +28,7 @@ public:
 	void DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor);
 
 	void ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNode);	
-	void ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, ESplitOrientation PreferredOrientation);
+	bool ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, ESplitOrientation ConnectOrientation);
 	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, int32 OverlapStart, int32 OverlapEnd);
 	
 	TSharedPtr<FloorNode> FindRootNode(TSharedPtr<FloorNode> InNode);
@@ -56,5 +56,7 @@ private:
 	float MaxRoomSizePercent;
 
 	int32 HallwayMinWidth;
+
+	int32 MaxConnectAttempts;
 	
 };

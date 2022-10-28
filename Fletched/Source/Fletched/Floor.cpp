@@ -3,6 +3,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "MathUtil.h"
+#include "Kismet/KismetMathLibrary.h"
 
 Floor::Floor()
 {
@@ -19,6 +20,8 @@ Floor::Floor()
 	MaxRoomSizePercent = 0.9f;
 
 	HallwayMinWidth = 2;
+
+	MaxConnectAttempts = 20;
 
 	UE_LOG(LogTemp, Warning, TEXT("Floor created."));
 
@@ -262,21 +265,34 @@ void Floor::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNod
 	{
 		return;
 	}
+	
 	if (RootNode->GetChildNodeA() != nullptr && RootNode->GetChildNodeB() != nullptr)
 	{
-		ConnectAttempt(World, RootNode->GetChildNodeA(), RootNode->GetChildNodeB(),
+		int32 AttemptsLeft = MaxConnectAttempts;
+		bool Attempt;
+		
+		do
+		{
+			AttemptsLeft--;
+			Attempt = ConnectAttempt(World, RootNode->GetChildNodeA(), RootNode->GetChildNodeB(),
 					   RootNode->GetChildNodeA()->GetSplitOrientation());
+			if(AttemptsLeft == 0)
+			{
+				UE_LOG(LogTemp, Error, TEXT("All connect attempts failed!"));
+			}
+		}
+		while(Attempt == false && AttemptsLeft > 0);
 	}
 	ConnectNodes(World, RootNode->GetChildNodeA());
 	ConnectNodes(World, RootNode->GetChildNodeB());	
 }
 
 /** Finds the best nodes to connect from both the NodeA side and NodeB side and calls CreateHallway on success **/
-void Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, ESplitOrientation PreferredOrientation)
+bool Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, ESplitOrientation ConnectOrientation)
 {
 	if (NodeA == nullptr || NodeB == nullptr)
 	{
-		return;
+		return true;
 	}
 
 	if (NodeA->GetChildNodeA() == nullptr && NodeA->GetChildNodeB() == nullptr)
@@ -286,7 +302,7 @@ void Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA
 			int32 OverlapStart;
 			int32 OverlapEnd;
 			bool HasOverlap;
-			if (PreferredOrientation == ESplitOrientation::ESO_Horizontal)
+			if (ConnectOrientation == ESplitOrientation::ESO_Horizontal)
 			{
 				HasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().UpperLeftX,
 				                                 NodeA->GetCornerCoordinates().LowerRightX,
@@ -304,45 +320,38 @@ void Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA
 			{
 				//Connect the matching nodes
 				CreateHallway(World, NodeA, NodeB, OverlapStart, OverlapEnd);
+				return true;
 			}
 			else
 			{
-				//Temporary DebugLine to display the nodes that weren't able to connect 
-				float NodeACenterX = (NodeA->GetCornerCoordinates().LowerRightX + NodeA->GetCornerCoordinates().UpperLeftX) / 2;
-				float NodeACenterY = (NodeA->GetCornerCoordinates().LowerRightY + NodeA->GetCornerCoordinates().UpperLeftY) / 2;
-				const FVector NodeACenter(NodeACenterX * UnitLength, NodeACenterY * UnitLength, 0.f);
-
-				float NodeBCenterX = (NodeB->GetCornerCoordinates().LowerRightX + NodeB->GetCornerCoordinates().UpperLeftX) / 2;
-				float NodeBCenterY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;
-				const FVector NodeBCenter(NodeBCenterX * UnitLength, NodeBCenterY * UnitLength, 0.f);
-
-				DrawDebugLine(World, NodeACenter, NodeBCenter, FColor::Black, true, -1, 0, 20.f);
-				//TODO: Go back up the tree and try a different node ?
-				UE_LOG(LogTemp, Error, TEXT("NO OVERLAP"));
+				UE_LOG(LogTemp, Warning, TEXT("Connect Attempt Failed"));
+				return false;
 			}
 		}
-		//TODO: Instead of check  distance between centers, check distance between walls
-		//Keep going deeper in the closest node of NodeB tree to find which node to connect
-		if (DistanceBetweenNodes(NodeA, NodeB->GetChildNodeA()) < DistanceBetweenNodes(NodeA, NodeB->GetChildNodeB()))
+		
+		bool IsChildACloser = DistanceBetweenNodes(NodeA, NodeB->GetChildNodeA()) < DistanceBetweenNodes(NodeA, NodeB->GetChildNodeB());
+		if(NodeA->GetChildNodeA() != nullptr)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("DESCENDING TREE A SIDE"));
-			ConnectAttempt(World, NodeA, NodeB->GetChildNodeA(), PreferredOrientation);
+			//Coinflip when it does not matter which one to choose
+			IsChildACloser = (ConnectOrientation == NodeA->GetChildNodeA()->GetSplitOrientation()) ? IsChildACloser : UKismetMathLibrary::Conv_IntToBool(CoinFlip());			
 		}
-		else
+		if (IsChildACloser)	//Keep going deeper in the closest node of NodeB tree to find which node to connect
 		{
-			UE_LOG(LogTemp, Warning, TEXT("DESCENDING TREE B SIDE"));
-			ConnectAttempt(World, NodeA, NodeB->GetChildNodeB(), PreferredOrientation);
+			return ConnectAttempt(World, NodeA, NodeB->GetChildNodeA(), ConnectOrientation);
 		}
+		return ConnectAttempt(World, NodeA, NodeB->GetChildNodeB(), ConnectOrientation);
 	}
-	//Keep going deeper in the closest node of NodeA tree to find which node to connect
-	if (DistanceBetweenNodes(NodeA->GetChildNodeA(), NodeB) < DistanceBetweenNodes(NodeA->GetChildNodeB(), NodeB))
+	bool IsChildACloser = DistanceBetweenNodes(NodeA->GetChildNodeA(), NodeB) < DistanceBetweenNodes(NodeA->GetChildNodeB(), NodeB);
+	if(NodeA->GetChildNodeA() != nullptr)
 	{
-		ConnectAttempt(World, NodeA->GetChildNodeA(), NodeB, PreferredOrientation);
+		//Coinflip when it does not matter which one to choose
+		IsChildACloser = (ConnectOrientation == NodeA->GetChildNodeA()->GetSplitOrientation()) ? IsChildACloser : UKismetMathLibrary::Conv_IntToBool(CoinFlip());
 	}
-	else
+	if (IsChildACloser) //Keep going deeper in the closest node of NodeA tree to find which node to connect
 	{
-		ConnectAttempt(World, NodeA->GetChildNodeB(), NodeB, PreferredOrientation);
+		return ConnectAttempt(World, NodeA->GetChildNodeA(), NodeB, ConnectOrientation);
 	}
+	return ConnectAttempt(World, NodeA->GetChildNodeB(), NodeB, ConnectOrientation);	
 }
 
 void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, int32 OverlapStart, int32 OverlapEnd)
@@ -410,7 +419,7 @@ int32 Floor::DistanceBetweenNodes(TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorN
 	float NodeBCenterX = (NodeB->GetCornerCoordinates().LowerRightX + NodeB->GetCornerCoordinates().UpperLeftX) / 2;
 	float NodeBCenterY = (NodeB->GetCornerCoordinates().LowerRightY + NodeB->GetCornerCoordinates().UpperLeftY) / 2;
 	FVector2f NodeBCenter = FVector2f(NodeBCenterX, NodeBCenterY);
-
+	
 	return FVector2f::Distance(NodeACenter, NodeBCenter);
 }
 
