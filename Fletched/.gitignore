@@ -83,8 +83,4 @@ Content/Meshes/*
 Content/MSPresets/*
 Content/Megascans/*
 
-#Other
-Content/__ExternalActors__/
-Content/__ExternalObjects__/
-
 Config/HoloLens/HoloLensEngine.ini
