@@ -16,10 +16,10 @@ Floor::Floor()
 
 	SplitChance = 1.3f;
 
-	MinRoomSizePercent = 0.3f;
+	MinRoomSizePercent = 0.4f;
 	MaxRoomSizePercent = 0.9f;
 
-	HallwayMinWidth = 4;
+	HallwayMinWidth = 2;
 
 	MaxConnectAttempts = 20;
 
@@ -228,8 +228,7 @@ FCornerCoordinates Floor::ResizeRoom(FCornerCoordinates Coordinates, float Resiz
 }
 
 void Floor::DrawFloorNodes(TObjectPtr<UWorld> World)
-{	
-	
+{		
 	//Resize and draw all rooms
 	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
 	{
@@ -294,63 +293,63 @@ bool Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA
 		return true;
 	}
 
-	if (NodeA->GetChildNodeA() == nullptr && NodeA->GetChildNodeB() == nullptr)
+	if (NodeA->GetChildNodeA() != nullptr && NodeA->GetChildNodeB() != nullptr)
 	{
-		if (NodeB->GetChildNodeA() == nullptr && NodeB->GetChildNodeB() == nullptr)
+		bool bChildACloser = DistanceBetweenNodes(NodeA->GetChildNodeA(), NodeB) < DistanceBetweenNodes(NodeA->GetChildNodeB(), NodeB);
+		if (NodeA->GetChildNodeA() != nullptr)
 		{
-			int32 OverlapStart;
-			int32 OverlapEnd;
-			bool bHasOverlap;
-			if (ConnectOrientation == ESplitOrientation::ESO_Horizontal)
-			{
-				bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().UpperLeftX,
-				                                 NodeA->GetCornerCoordinates().LowerRightX,
-				                                 NodeB->GetCornerCoordinates().UpperLeftX,
-				                                 NodeB->GetCornerCoordinates().LowerRightX, OverlapStart, OverlapEnd);
-			}
-			else// if (PreferredOrientation == ESplitOrientation::ESO_Vertical)
-			{
-				bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().UpperLeftY,
-				                                 NodeA->GetCornerCoordinates().LowerRightY,
-				                                 NodeB->GetCornerCoordinates().UpperLeftY,
-				                                 NodeB->GetCornerCoordinates().LowerRightY, OverlapStart, OverlapEnd);
-			}
-			if (bHasOverlap)
-			{
-				//Connect the matching nodes
-				CreateHallway(World, NodeA, NodeB, OverlapStart, OverlapEnd);
-				return true;
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Connect Attempt Failed"));
-				return false;
-			}
+			//Coinflip when it does not matter which node to choose, adds randomness for repeated connect attempts
+			bChildACloser = (ConnectOrientation == NodeA->GetChildNodeA()->GetSplitOrientation()) ? bChildACloser : UKismetMathLibrary::Conv_IntToBool(CoinFlip());
 		}
-		
+		if (bChildACloser) //Keep going deeper in the closest node of NodeA tree to find which node to connect
+		{
+			return ConnectAttempt(World, NodeA->GetChildNodeA(), NodeB, ConnectOrientation);
+		}
+		return ConnectAttempt(World, NodeA->GetChildNodeB(), NodeB, ConnectOrientation);
+	}
+
+	if (NodeB->GetChildNodeA() != nullptr && NodeB->GetChildNodeB() != nullptr)
+	{
 		bool bIsChildACloser = DistanceBetweenNodes(NodeA, NodeB->GetChildNodeA()) < DistanceBetweenNodes(NodeA, NodeB->GetChildNodeB());
-		if(NodeA->GetChildNodeA() != nullptr)
+		if (NodeA->GetChildNodeA() != nullptr)
 		{
-			//Coinflip when it does not matter which one to choose
-			bIsChildACloser = (ConnectOrientation == NodeA->GetChildNodeA()->GetSplitOrientation()) ? bIsChildACloser : UKismetMathLibrary::Conv_IntToBool(CoinFlip());			
+			//Coinflip when it does not matter which node to choose, adds randomness for repeated connect attempts
+			bIsChildACloser = (ConnectOrientation == NodeA->GetChildNodeA()->GetSplitOrientation()) ? bIsChildACloser : UKismetMathLibrary::Conv_IntToBool(CoinFlip());
 		}
-		if (bIsChildACloser)	//Keep going deeper in the closest node of NodeB tree to find which node to connect
+		if (bIsChildACloser) //Keep going deeper in the closest node of NodeB tree to find which node to connect
 		{
 			return ConnectAttempt(World, NodeA, NodeB->GetChildNodeA(), ConnectOrientation);
 		}
 		return ConnectAttempt(World, NodeA, NodeB->GetChildNodeB(), ConnectOrientation);
-	}
-	bool bChildACloser = DistanceBetweenNodes(NodeA->GetChildNodeA(), NodeB) < DistanceBetweenNodes(NodeA->GetChildNodeB(), NodeB);
-	if(NodeA->GetChildNodeA() != nullptr)
+	}	
+
+	int32 OverlapStart;
+	int32 OverlapEnd;
+	bool bHasOverlap;
+	
+	if (ConnectOrientation == ESplitOrientation::ESO_Horizontal)
 	{
-		//Coinflip when it does not matter which one to choose
-		bChildACloser = (ConnectOrientation == NodeA->GetChildNodeA()->GetSplitOrientation()) ? bChildACloser : UKismetMathLibrary::Conv_IntToBool(CoinFlip());
+		bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().UpperLeftX,
+										 NodeA->GetCornerCoordinates().LowerRightX,
+										 NodeB->GetCornerCoordinates().UpperLeftX,
+										 NodeB->GetCornerCoordinates().LowerRightX, OverlapStart, OverlapEnd);
 	}
-	if (bChildACloser) //Keep going deeper in the closest node of NodeA tree to find which node to connect
+	else// if (ConnectOrientation == ESplitOrientation::ESO_Vertical)
+		{
+		bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().UpperLeftY,
+										 NodeA->GetCornerCoordinates().LowerRightY,
+										 NodeB->GetCornerCoordinates().UpperLeftY,
+										 NodeB->GetCornerCoordinates().LowerRightY, OverlapStart, OverlapEnd);
+		}
+	if (bHasOverlap)
 	{
-		return ConnectAttempt(World, NodeA->GetChildNodeA(), NodeB, ConnectOrientation);
+		//Connect the matching nodes
+		CreateHallway(World, NodeA, NodeB, OverlapStart, OverlapEnd);
+		return true;
 	}
-	return ConnectAttempt(World, NodeA->GetChildNodeB(), NodeB, ConnectOrientation);	
+
+	UE_LOG(LogTemp, Warning, TEXT("Connect Attempt Failed"));
+	return false;	
 }
 
 void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, int32 OverlapStart, int32 OverlapEnd)
@@ -405,7 +404,7 @@ bool Floor::CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStar
 	return OverlapEnd - OverlapStart > 0;
 }
 
-/** Euclidean distance between the center of 2 nodes **/
+/** Euclidean distance between the centers of 2 nodes **/
 int32 Floor::DistanceBetweenNodes(TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB)
 {
 	if (NodeA == nullptr || NodeB == nullptr)
