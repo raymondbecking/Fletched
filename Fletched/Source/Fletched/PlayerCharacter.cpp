@@ -129,6 +129,7 @@ void APlayerCharacter::OnPrimaryReleaseAction()
 
 void APlayerCharacter::OnPrimarySkill()
 {
+	//TODO: Create system to hold all aquired skills and allow for switching between skills
 	if(GetWorld() != nullptr)
 	{
 		// Enable slowmotion if it wasn't already

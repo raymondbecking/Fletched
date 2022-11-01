@@ -126,18 +126,20 @@ void UNameTagComponent::SetNameTagPosition(FVector &PositionOffset)
 void UNameTagComponent::SetNameTagText(FText& Text, FColor& Color)
 {
 	NameTagWidget->InitWidget();
-	if (NameTagWidget->GetUserWidgetObject() != nullptr)
+	if (NameTagWidget->GetUserWidgetObject() == nullptr)
 	{
-		//Cast to the parent class of the Widget BP
-		NameTagTextWidget = Cast<UTextWidget>(NameTagWidget->GetUserWidgetObject());
-		NameTagTextWidget->SetTextLabel(Text);
-		
-		if (bOverrideDefaultColor)
-		{
-			//Set NameTag Text Color
-			NameTagTextWidget->SetColor(Color);
-		}
+		return;
 	}
+	//Cast to the parent class of the Widget BP
+	NameTagTextWidget = Cast<UTextWidget>(NameTagWidget->GetUserWidgetObject());
+	NameTagTextWidget->SetTextLabel(Text);
+
+	if (bOverrideDefaultColor)
+	{
+		//Set NameTag Text Color
+		NameTagTextWidget->SetColor(Color);
+	}
+	
 }
 
 void UNameTagComponent::ReconfigureTextWidget(UUserWidget& Widget, FText Text, EWidgetSpace WidgetSpace,

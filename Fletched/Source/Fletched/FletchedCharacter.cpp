@@ -2,7 +2,6 @@
 
 
 #include "FletchedCharacter.h"
-#include "Components/CapsuleComponent.h"
 
 // Sets default values
 AFletchedCharacter::AFletchedCharacter()
