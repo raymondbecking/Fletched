@@ -23,33 +23,35 @@ void UTP_WeaponComponent::Fire()
 	{
 		return;
 	}
-
-	// Try and fire a projectile
-	if (ProjectileClass != nullptr)
+	if (ProjectileClass == nullptr)
 	{
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
-		{
-			APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
-			SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
-			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
-	
-			//Set Spawn Collision Handling Override
-			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-			if (!bEnableChargedFire)
-			{
-				// Spawn the projectile at the muzzle
-				World->SpawnActor<AFletchedProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-			}
-			else
-			{
-				ReleaseChargedFire();
-			}
-		}
+		return;
 	}
+	UWorld* const World = GetWorld();
+	if (World == nullptr)
+	{
+		return;
+	}
+	// Try and fire a projectile
+	APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
+	SpawnRotation = PlayerController->PlayerCameraManager->GetCameraRotation();
+	// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+	SpawnLocation = GetOwner()->GetActorLocation() + SpawnRotation.RotateVector(MuzzleOffset);
+
+	//Set Spawn Collision Handling Override
+	FActorSpawnParameters ActorSpawnParams;
+	ActorSpawnParams.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+	if (!bEnableChargedFire)
+	{
+		// Spawn the projectile at the muzzle
+		World->SpawnActor<AFletchedProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+	}
+	else
+	{
+		ReleaseChargedFire();
+	}	
 	
 	// Try and play the sound if specified
 	if (FireSound != nullptr)
@@ -95,25 +97,28 @@ void UTP_WeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UTP_WeaponComponent::AttachWeapon(APlayerCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
-	if(Character != nullptr)
+	if(Character == nullptr)
 	{
-		// Attach the weapon to the First Person Character
-		const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-		GetOwner()->AttachToComponent(Character->GetMesh1P(),AttachmentRules, FName(TEXT("GripPoint")));
-
-		if (bEnableChargedFire)
-		{
-			// Register so that ChargeFire is called every time the character holds down the item being held
-			Character->OnHoldItem.AddDynamic(this, &UTP_WeaponComponent::ChargeFire);
-			// Register so that Fire is called every time the character tries to release the charge of the item being held
-			Character->OnReleaseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
-		}
-		else
-		{
-			// Register so that Fire is called every time the character tries to use the item being held
-			Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
-		}
+		return;
 	}
+	
+	// Attach the weapon to the First Person Character
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	GetOwner()->AttachToComponent(Character->GetMesh1P(), AttachmentRules, FName(TEXT("GripPoint")));
+
+	if (bEnableChargedFire)
+	{
+		// Register so that ChargeFire is called every time the character holds down the item being held
+		Character->OnHoldItem.AddDynamic(this, &UTP_WeaponComponent::ChargeFire);
+		// Register so that Fire is called every time the character tries to release the charge of the item being held
+		Character->OnReleaseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
+	}
+	else
+	{
+		// Register so that Fire is called every time the character tries to use the item being held
+		Character->OnUseItem.AddDynamic(this, &UTP_WeaponComponent::Fire);
+	}
+	
 }
 
 float UTP_WeaponComponent::TotalTimeCharged()

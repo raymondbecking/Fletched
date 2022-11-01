@@ -14,7 +14,6 @@ ABlackHoleProjectile::ABlackHoleProjectile()
 	// Use a box as a simple collision representation
 	DetectorComp = CreateDefaultSubobject<UBoxComponent>(TEXT("Detector"));
 	DetectorComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-
 	DetectorComp->InitBoxExtent(FVector(1.5,1.5,1.5));
 }
 
@@ -31,12 +30,11 @@ void ABlackHoleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActo
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 }
 
-
 void ABlackHoleProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                           UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                           const FHitResult& SweepResult)
 {
-	if ((OtherActor == nullptr) || (OtherActor == this) || (OtherComp == nullptr) || (ProjectileMovement == nullptr))
+	if (OtherActor == nullptr || OtherActor == this || OtherComp == nullptr || ProjectileMovement == nullptr)
 	{
 		return;
 	}
@@ -54,20 +52,26 @@ void ABlackHoleProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, A
 	else //Enemy Interactions
 	{
 		//Check if the character hit was an enemy
-		if (AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(OtherActor); HitEnemy != nullptr)
+		if (AEnemyCharacter* HitEnemy = Cast<AEnemyCharacter>(OtherActor); HitEnemy == nullptr)
 		{
-			if (ProjectileMovement != nullptr)
-			{
-				//Enable sweep to be able to hit an enemy
-				ProjectileMovement->bSweepCollision = true;
-			}
+			return;
 		}
+		if (ProjectileMovement == nullptr)
+		{
+			return;
+		}
+		//Enable sweep to be able to hit an enemy
+		ProjectileMovement->bSweepCollision = true;		
 	}
 	
 }
 
 void ABlackHoleProjectile::TeleportProjectile(AActor* TeleportActor)
 {
+	if (ProjectileMovement == nullptr)
+	{
+		return;
+	}
 	FVector TraceStart = this->GetActorLocation();
 	FVector TraceEnd = this->GetActorLocation() + this->GetActorForwardVector() * MaxPierceThickness;
 
@@ -86,20 +90,18 @@ void ABlackHoleProjectile::TeleportProjectile(AActor* TeleportActor)
 			DrawDebugLine(GetWorld(), ReverseHit.Location,
 				  ReverseHit.Location + (this->GetActorForwardVector() * 50), FColor(255, 0, 0),
 				  false, 10.f, 0, 5.f);
-			if (ProjectileMovement != nullptr)
-			{
-				SpawnBlackHole(FTransform(LineHit.Location - (this->GetActorForwardVector() * TeleportEntryMargin)));
+			SpawnBlackHole(FTransform(LineHit.Location - (this->GetActorForwardVector() * TeleportEntryMargin)));
 
-				// Represents the distance from the entry point to the exit point of an object
-				FVector TeleportDistance = ReverseHit.Location - LineHit.Location;
-				// Calculate where projectile should go including the exit margin
-				FVector TeleportAmount = TeleportDistance + (this->GetActorForwardVector() * TeleportExitMargin);
-				// Teleport projectile to new location
-				ProjectileMovement->MoveUpdatedComponent(TeleportAmount, this->GetActorRotation(), false,
-				                                         nullptr, ETeleportType::TeleportPhysics);
-				
-				SpawnBlackHole(FTransform(GetActorLocation()));
-			}
+			// Represents the distance from the entry point to the exit point of an object
+			FVector TeleportDistance = ReverseHit.Location - LineHit.Location;
+			// Calculate where projectile should go including the exit margin
+			FVector TeleportAmount = TeleportDistance + (this->GetActorForwardVector() * TeleportExitMargin);
+			// Teleport projectile to new location
+			ProjectileMovement->MoveUpdatedComponent(TeleportAmount, this->GetActorRotation(), false,
+			                                         nullptr, ETeleportType::TeleportPhysics);
+
+			SpawnBlackHole(FTransform(GetActorLocation()));
+			
 		}
 	}
 }
@@ -114,7 +116,6 @@ void ABlackHoleProjectile::SpawnBlackHole(const FTransform SpawnTransform)
 	
 	AActor* BlackHoleActor = World->SpawnActorDeferred<AActor>(
 		BlackHoleEffectClass, SpawnTransform, GetOwner(), GetOwner()->GetAttachParentActor()->GetInstigator());
-
 
 	//Access projectile pointer to change settings for spawned projectile
 	if (BlackHoleActor != nullptr)

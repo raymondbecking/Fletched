@@ -23,7 +23,6 @@ void UTP_BowComponent::ChargeFire()
 
 void UTP_BowComponent::ReleaseChargedFire()
 {
-	//TODO: Swap order?
 	SpawnArrow();
 	NockArrow(false);
 }
@@ -44,7 +43,10 @@ void UTP_BowComponent::SpawnArrow()
 
 	const float ProjectileSpeed = ChargedProjectileSpeed();
 	//Abort charged fire if projectile speed is invalid
-	if (ProjectileSpeed == 0.f) { return; }
+	if (ProjectileSpeed == 0.f)
+	{
+		return;
+	}
 
 	FTransform ProjectileTransform;
 	ProjectileTransform.SetLocation(SpawnLocation);
@@ -86,10 +88,7 @@ void UTP_BowComponent::NockArrow(bool bIsNocking)
 			// Hide Static arrow on bow when the projectile is fired
 			StaticArrow->SetActorHiddenInGame(true);
 		}
-	}
-
-	// Attach arrow to bowstring
-	if (bIsNocking)
+	}else// Attach arrow to bowstring
 	{
 		FString SocketMeshName = "recurve_Rope";
 		FName SocketName = TEXT("ArrowSocket");
@@ -104,21 +103,22 @@ void UTP_BowComponent::NockArrow(bool bIsNocking)
 				ProjectileClass, SocketMesh->GetSocketTransform(SocketName, ERelativeTransformSpace::RTS_Component));
 
 			// Settings for newly spawned arrow
-			if (StaticArrow != nullptr)
+			if (StaticArrow == nullptr)
 			{
-				// Destroy ProjectileMovement since we do not need it on the static arrow attached to the bow
-				StaticArrow->GetProjectileMovement()->DestroyComponent();
-				// Prevent collisions
-				StaticArrow->SetActorEnableCollision(false);
-				// Prevent destruction of the projectile
-				StaticArrow->SetLifeSpan(0);
-				// Attach to the bowstring
-				StaticArrow->AttachToComponent(SocketMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-				                               SocketName);
-				UGameplayStatics::FinishSpawningActor(StaticArrow,
-				                                      SocketMesh->GetSocketTransform(
-					                                      SocketName, ERelativeTransformSpace::RTS_Component));
+				return;
 			}
+			// Destroy ProjectileMovement since we do not need it on the static arrow attached to the bow
+			StaticArrow->GetProjectileMovement()->DestroyComponent();
+			// Prevent collisions
+			StaticArrow->SetActorEnableCollision(false);
+			// Prevent destruction of the projectile
+			StaticArrow->SetLifeSpan(0);
+			// Attach to the bowstring
+			StaticArrow->AttachToComponent(SocketMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			                               SocketName);
+			UGameplayStatics::FinishSpawningActor(StaticArrow,
+			                                      SocketMesh->GetSocketTransform(
+				                                      SocketName, ERelativeTransformSpace::RTS_Component));			
 		}
 
 		// On consecutive Nocking only set the StaticArrow to Visible
