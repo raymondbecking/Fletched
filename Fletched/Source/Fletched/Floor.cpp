@@ -281,6 +281,9 @@ void Floor::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNod
 		}
 		while(bAttemptSuccessful == false && AttemptsLeft > 0);
 	}
+
+	//TODO: Add random hallways based on Dice Roll to make more interesting pathways
+	
 	ConnectNodes(World, RootNode->GetChildNodeA());
 	ConnectNodes(World, RootNode->GetChildNodeB());	
 }

@@ -26,27 +26,4 @@ public:
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Room, meta = (AllowPrivateAccess=true))
 	TObjectPtr<UStaticMeshComponent> FloorMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Room, meta = (AllowPrivateAccess=true))
-	TSubclassOf<AActor> ChairClass;
-	
-	void SpawnItem(TObjectPtr<UClass> ItemToSpawn);
-
-	float SquareWidth;
-	float GridHeight;
-	float RoomLength;
-	float RoomWidth;
-	
-	FVector TopLeft;
-	FVector BottomRight;
-	int32 GridSizeX;
-	int32 GridSizeY;
-
-	float Radius = 25.f;
-	
-	void CreateGrid();
-
-	FVector GetRandomPointInSquare(const FVector& UpperLeft, const FVector& LowerRight);
-
-	void PlacePointsOnGrid();
 };
