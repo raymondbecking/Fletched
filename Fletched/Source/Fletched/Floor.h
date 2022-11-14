@@ -56,7 +56,8 @@ private:
 	float MaxRoomSizePercent;
 
 	int32 HallwayMinWidth;
-
 	int32 MaxConnectAttempts;
+
+	float RandomHallwayChance;
 	
 };

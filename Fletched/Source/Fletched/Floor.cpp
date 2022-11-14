@@ -23,6 +23,8 @@ Floor::Floor()
 
 	MaxConnectAttempts = 20;
 
+	RandomHallwayChance = .5f;
+
 	UE_LOG(LogTemp, Warning, TEXT("Floor created."));
 
 }
@@ -268,7 +270,8 @@ void Floor::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNod
 	{
 		int32 AttemptsLeft = MaxConnectAttempts;
 		bool bAttemptSuccessful;
-		
+
+		//More attempts are needed the lower MinRoomSizePercent is set, extra attempts occur 1 in 6 generations of the entire floor at 0.5f 
 		do
 		{
 			AttemptsLeft--;
@@ -280,10 +283,19 @@ void Floor::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNod
 			}
 		}
 		while(bAttemptSuccessful == false && AttemptsLeft > 0);
-	}
 
-	//TODO: Add random hallways based on Dice Roll to make more interesting pathways
-	
+		//Randomly add hallways, End nodes don't need more hallways
+		if (RootNode->GetChildNodeA()->GetChildNodeA() != nullptr &&
+			RootNode->GetChildNodeB()->GetChildNodeA() != nullptr)
+		{
+			if (DiceRoll() < RandomHallwayChance)
+			{
+				// Doesn't matter if attempt is successful or not since its an extra hallway, attempts rarely fail anyways
+				ConnectAttempt(World, RootNode->GetChildNodeA(), RootNode->GetChildNodeB(),
+				               RootNode->GetChildNodeA()->GetSplitOrientation());
+			}
+		}
+	}	
 	ConnectNodes(World, RootNode->GetChildNodeA());
 	ConnectNodes(World, RootNode->GetChildNodeB());	
 }
