@@ -1,14 +1,14 @@
-﻿#include "Floor.h"
-#include "FloorNode.h"
+﻿#include "BSP.h"
+#include "BSPNode.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "MathUtil.h"
 #include "Kismet/KismetMathLibrary.h"
 
-Floor::Floor()
+BSP::BSP()
 {
-	FloorGridSizeX = 200;
-	FloorGridSizeY = 200;
+	BSPGridSizeX = 200;
+	BSPGridSizeY = 200;
 	RoomMinX = 20;
 	RoomMinY = 20;
 
@@ -25,58 +25,59 @@ Floor::Floor()
 
 	RandomHallwayChance = .5f;
 
-	UE_LOG(LogTemp, Warning, TEXT("Floor created."));
+	UE_LOG(LogTemp, Warning, TEXT("BSP created."));
 
 }
 
-Floor::~Floor()
+BSP::~BSP()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Floor destroyed."));
+	UE_LOG(LogTemp, Warning, TEXT("BSP destroyed."));
 }
 
-void Floor::Partition()
+void BSP::Partition()
 {
-	FCornerCoordinates CornerCoordinatesA = {0,0, FloorGridSizeX, FloorGridSizeY};
-	FloorNodeStack.Push(TSharedPtr<FloorNode>(new FloorNode(CornerCoordinatesA)));
+	FCornerCoordinates CornerCoordinatesA = {0,0, BSPGridSizeX, BSPGridSizeY};
+	BSPNodeStack.Push(TSharedPtr<BSPNode>(new BSPNode(CornerCoordinatesA)));
 
-	while (FloorNodeStack.Num() > 0)
+	while (BSPNodeStack.Num() > 0)
 	{
-		TSharedPtr<FloorNode> A = FloorNodeStack.Pop();
+		TSharedPtr<BSPNode> A = BSPNodeStack.Pop();
 
 		bool bNodeWasSplit = SplitAttempt(A);
 		if(!bNodeWasSplit)
 		{
-			PartitionedFloor.Push(A);
+			PartitionedBSPNodes.Push(A);
 		}		
 	}
 }
 
-int32 Floor::CoinFlip()
+int32 BSP::CoinFlip()
 {
 	return FMath::RandRange(0,1);
 }
 
-float Floor::DiceRoll()
+float BSP::DiceRoll()
 {
 	return FMath::FRandRange(0.f, 1.f);
 }
 
-bool Floor::ShouldSplitNode(TSharedPtr<FloorNode> InNode, ESplitOrientation Orientation)
+bool BSP::ShouldSplitNode(TSharedPtr<BSPNode> InNode, ESplitOrientation Orientation)
 {
 	FCornerCoordinates CornerCoordinates = InNode->GetCornerCoordinates();
 
 	if(Orientation == ESplitOrientation::ESO_Horizontal)
 	{
-		int32 FloorLength = CornerCoordinates.LowerRightY - CornerCoordinates.UpperLeftY;
-		float PercentChanceOfSplit = (float)FloorLength / (float)FloorGridSizeY;
+		int32 NodeLength = CornerCoordinates.LowerRightY - CornerCoordinates.UpperLeftY;
+		float PercentChanceOfSplit = (float)NodeLength / (float)BSPGridSizeY;
 		PercentChanceOfSplit *= SplitChance;
 
+		
 		if(DiceRoll() > PercentChanceOfSplit)
 		{
 			return false;
 		}
 
-		if(FloorLength >= 2 * RoomMinY)
+		if(NodeLength >= 2 * RoomMinY)
 		{
 			return true;
 		}
@@ -84,8 +85,8 @@ bool Floor::ShouldSplitNode(TSharedPtr<FloorNode> InNode, ESplitOrientation Orie
 	}
 	else if(Orientation == ESplitOrientation::ESO_Vertical)
 	{
-		int32 FloorWidth = CornerCoordinates.LowerRightX - CornerCoordinates.UpperLeftX;
-		float PercentChanceOfSplit = (float)FloorWidth / (float)FloorGridSizeX;
+		int32 NodeWidth = CornerCoordinates.LowerRightX - CornerCoordinates.UpperLeftX;
+		float PercentChanceOfSplit = (float)NodeWidth / (float)BSPGridSizeX;
 		PercentChanceOfSplit *= SplitChance;
 
 		if(DiceRoll() > PercentChanceOfSplit)
@@ -93,7 +94,7 @@ bool Floor::ShouldSplitNode(TSharedPtr<FloorNode> InNode, ESplitOrientation Orie
 			return false;
 		}
 		
-		if(FloorWidth >= 2 * RoomMinX)
+		if(NodeWidth >= 2 * RoomMinX)
 		{
 			return true;
 		}
@@ -101,7 +102,7 @@ bool Floor::ShouldSplitNode(TSharedPtr<FloorNode> InNode, ESplitOrientation Orie
 	return false;
 }
 
-bool Floor::SplitAttempt(TSharedPtr<FloorNode> InNode)
+bool BSP::SplitAttempt(TSharedPtr<BSPNode> InNode)
 {
 	int32 HorizontalOrVertical = CoinFlip();
 	if(HorizontalOrVertical == 0)
@@ -109,8 +110,8 @@ bool Floor::SplitAttempt(TSharedPtr<FloorNode> InNode)
 		if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Horizontal))
 		{
 			//Try to split node Horizontally
-			TSharedPtr<FloorNode> B(new FloorNode());
-			TSharedPtr<FloorNode> C(new FloorNode());
+			TSharedPtr<BSPNode> B(new BSPNode());
+			TSharedPtr<BSPNode> C(new BSPNode());
 
 			SplitHorizontal(InNode, B, C);
 			return true;
@@ -118,8 +119,8 @@ bool Floor::SplitAttempt(TSharedPtr<FloorNode> InNode)
 		else if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Vertical))
 		{
 			//Try to split node Vertically
-			TSharedPtr<FloorNode> B(new FloorNode());
-			TSharedPtr<FloorNode> C(new FloorNode());
+			TSharedPtr<BSPNode> B(new BSPNode());
+			TSharedPtr<BSPNode> C(new BSPNode());
 			
 			SplitVertical(InNode, B, C);
 			return true;
@@ -130,8 +131,8 @@ bool Floor::SplitAttempt(TSharedPtr<FloorNode> InNode)
 		if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Vertical))
 		{
 			//Try to split node Vertically
-			TSharedPtr<FloorNode> B(new FloorNode());
-			TSharedPtr<FloorNode> C(new FloorNode());
+			TSharedPtr<BSPNode> B(new BSPNode());
+			TSharedPtr<BSPNode> C(new BSPNode());
 			
 			SplitVertical(InNode, B, C);
 			return true;
@@ -139,8 +140,8 @@ bool Floor::SplitAttempt(TSharedPtr<FloorNode> InNode)
 		else if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Horizontal))
 		{
 			//Try to split node Horizontally
-			TSharedPtr<FloorNode> B(new FloorNode());
-			TSharedPtr<FloorNode> C(new FloorNode());
+			TSharedPtr<BSPNode> B(new BSPNode());
+			TSharedPtr<BSPNode> C(new BSPNode());
 
 			SplitHorizontal(InNode, B, C);
 			return true;
@@ -149,13 +150,13 @@ bool Floor::SplitAttempt(TSharedPtr<FloorNode> InNode)
 	return false;
 }
 
-void Floor::SplitHorizontal(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, TSharedPtr<FloorNode> InC)
+void BSP::SplitHorizontal(TSharedPtr<BSPNode> InA, TSharedPtr<BSPNode> InB, TSharedPtr<BSPNode> InC)
 {
 	int32 SplitPointY = FMath::RandRange(InA->GetCornerCoordinates().UpperLeftY + RoomMinY, InA->GetCornerCoordinates().LowerRightY - RoomMinY);
 
 	InA->SetChildNodes(InB, InC);
 	
-	//New FloorNode top
+	//New BSPNode top
 	FCornerCoordinates CornerCoordinatesB;
 	CornerCoordinatesB.UpperLeftX = InA->GetCornerCoordinates().UpperLeftX;
 	CornerCoordinatesB.UpperLeftY = InA->GetCornerCoordinates().UpperLeftY;
@@ -165,9 +166,9 @@ void Floor::SplitHorizontal(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB
 	InB->SetCornerCoordinates(CornerCoordinatesB);
 	InB->SetParentNode(InA);
 	InB->SetSplitOrientation(ESplitOrientation::ESO_Horizontal);
-	FloorNodeStack.Push(InB);
+	BSPNodeStack.Push(InB);
 
-	//New FloorNode bottom
+	//New BSPNode bottom
 	FCornerCoordinates CornerCoordinatesC;
 	CornerCoordinatesC.UpperLeftX = InA->GetCornerCoordinates().UpperLeftX;
 	CornerCoordinatesC.UpperLeftY = SplitPointY;
@@ -177,16 +178,16 @@ void Floor::SplitHorizontal(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB
 	InC->SetCornerCoordinates(CornerCoordinatesC);
 	InC->SetParentNode(InA);
 	InB->SetSplitOrientation(ESplitOrientation::ESO_Horizontal);
-	FloorNodeStack.Push(InC);
+	BSPNodeStack.Push(InC);
 }
 
-void Floor::SplitVertical(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, TSharedPtr<FloorNode> InC)
+void BSP::SplitVertical(TSharedPtr<BSPNode> InA, TSharedPtr<BSPNode> InB, TSharedPtr<BSPNode> InC)
 {
 	int32 SplitPointX = FMath::RandRange(InA->GetCornerCoordinates().UpperLeftX + RoomMinX, InA->GetCornerCoordinates().LowerRightX - RoomMinX);
 
 	InA->SetChildNodes(InB, InC);
 	
-	//New FloorNode left
+	//New BSPNode left
 	FCornerCoordinates CornerCoordinatesB;
 	CornerCoordinatesB.UpperLeftX = InA->GetCornerCoordinates().UpperLeftX;
 	CornerCoordinatesB.UpperLeftY = InA->GetCornerCoordinates().UpperLeftY;
@@ -196,9 +197,9 @@ void Floor::SplitVertical(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, 
 	InB->SetCornerCoordinates(CornerCoordinatesB);
 	InB->SetParentNode(InA);
 	InB->SetSplitOrientation(ESplitOrientation::ESO_Vertical);
-	FloorNodeStack.Push(InB);
+	BSPNodeStack.Push(InB);
 
-	//New FloorNode right
+	//New BSPNode right
 	FCornerCoordinates CornerCoordinatesC;
 	CornerCoordinatesC.UpperLeftX = SplitPointX;
 	CornerCoordinatesC.UpperLeftY = InA->GetCornerCoordinates().UpperLeftY;
@@ -208,10 +209,10 @@ void Floor::SplitVertical(TSharedPtr<FloorNode> InA, TSharedPtr<FloorNode> InB, 
 	InC->SetCornerCoordinates(CornerCoordinatesC);
 	InC->SetParentNode(InA);
 	InB->SetSplitOrientation(ESplitOrientation::ESO_Vertical);
-	FloorNodeStack.Push(InC);
+	BSPNodeStack.Push(InC);
 }
 
-FCornerCoordinates Floor::ResizeRoom(FCornerCoordinates Coordinates, float ResizePercent)
+FCornerCoordinates BSP::ResizeRoom(FCornerCoordinates Coordinates, float ResizePercent)
 {
 	//Calculate new length of each side of the square
 	int32 ResizedWidth = (Coordinates.LowerRightX - Coordinates.UpperLeftX) * ResizePercent;
@@ -229,23 +230,23 @@ FCornerCoordinates Floor::ResizeRoom(FCornerCoordinates Coordinates, float Resiz
 	return ResizedCoordinates;
 }
 
-void Floor::DrawFloorNodes(TObjectPtr<UWorld> World)
+void BSP::DrawBSPNodes(TObjectPtr<UWorld> World)
 {		
 	//Resize and draw all rooms
-	for (int32 i = 0; i < PartitionedFloor.Num(); i++)
+	for (int32 i = 0; i < PartitionedBSPNodes.Num(); i++)
 	{
-		FCornerCoordinates Coordinates = PartitionedFloor[i]->GetCornerCoordinates();
+		FCornerCoordinates Coordinates = PartitionedBSPNodes[i]->GetCornerCoordinates();
 
 		float ResizePercent = FMath::RandRange(MinRoomSizePercent, MaxRoomSizePercent);
 		Coordinates = ResizeRoom(Coordinates, ResizePercent);
-		PartitionedFloor[i]->SetCornerCoordinates(Coordinates);
-		DrawFloorNode(World, Coordinates, FColor::Blue);
+		PartitionedBSPNodes[i]->SetCornerCoordinates(Coordinates);
+		DrawBSPNode(World, Coordinates, FColor::Blue);
 	}
 	//Connect all nodes with hallways
-	ConnectNodes(World, FindRootNode(PartitionedFloor[0]));
+	ConnectNodes(World, FindRootNode(PartitionedBSPNodes[0]));
 }
 
-void Floor::DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor)
+void BSP::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor)
 {
 	const FVector UpperLeft(Coordinates.UpperLeftX * UnitLength, Coordinates.UpperLeftY * UnitLength, 0.f);
 	const FVector UpperRight(Coordinates.LowerRightX * UnitLength, Coordinates.UpperLeftY * UnitLength, 0.f);
@@ -259,7 +260,7 @@ void Floor::DrawFloorNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinat
 }
 
 /** Traverse Tree Recursively using Depth-first-search preorder to connect all nodes in the tree **/
-void Floor::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNode)
+void BSP::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<BSPNode> RootNode)
 {
 	if (RootNode == nullptr)
 	{
@@ -271,7 +272,7 @@ void Floor::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNod
 		int32 AttemptsLeft = MaxConnectAttempts;
 		bool bAttemptSuccessful;
 
-		//More attempts are needed the lower MinRoomSizePercent is set, extra attempts occur 1 in 6 generations of the entire floor at 0.5f 
+		//More attempts are needed the lower MinRoomSizePercent is set, extra attempts occur 1 in 6 generations of the entire dungeon at 0.5f 
 		do
 		{
 			AttemptsLeft--;
@@ -301,7 +302,7 @@ void Floor::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> RootNod
 }
 
 /** Finds the best nodes to connect from both the NodeA side and NodeB side and calls CreateHallway on success **/
-bool Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, ESplitOrientation ConnectOrientation)
+bool BSP::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSPNode> NodeA, TSharedPtr<BSPNode> NodeB, ESplitOrientation ConnectOrientation)
 {
 	if (NodeA == nullptr || NodeB == nullptr)
 	{
@@ -367,11 +368,11 @@ bool Floor::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA
 	return false;	
 }
 
-void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB, int32 OverlapStart, int32 OverlapEnd)
+void BSP::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSPNode> NodeA, TSharedPtr<BSPNode> NodeB, int32 OverlapStart, int32 OverlapEnd)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Creating Hallway"));
 
-	TSharedPtr<FloorNode> HallwayNode(new FloorNode());
+	TSharedPtr<BSPNode> HallwayNode(new BSPNode());
 	FCornerCoordinates HallwayCornerCoordinates;
 	
 	int32 HallwayRadius = HallwayMinWidth / 2;
@@ -398,10 +399,10 @@ void Floor::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<FloorNode> NodeA,
 	HallwayNode->SetCornerCoordinates(HallwayCornerCoordinates);
 	//Should Parent node also be the hallways parent? 
 	NodeA->GetParentNode()->SetHallwayNode(HallwayNode);
-	DrawFloorNode(World, HallwayCornerCoordinates, HallwayColor);
+	DrawBSPNode(World, HallwayCornerCoordinates, HallwayColor);
 }
 
-TSharedPtr<FloorNode> Floor::FindRootNode(TSharedPtr<FloorNode> InNode)
+TSharedPtr<BSPNode> BSP::FindRootNode(TSharedPtr<BSPNode> InNode)
 {
 	if (InNode->GetParentNode() != nullptr)
 	{
@@ -411,7 +412,7 @@ TSharedPtr<FloorNode> Floor::FindRootNode(TSharedPtr<FloorNode> InNode)
 }
 
 /** Not actual overlap is calculated, but rather what part of 2 sides of different nodes align **/
-bool Floor::CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
+bool BSP::CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
                                 int32& OverlapStart, int32& OverlapEnd)
 {
 	OverlapStart = TMathUtil<int32>::Max(LineStartA, LineStartB);
@@ -420,7 +421,7 @@ bool Floor::CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStar
 }
 
 /** Euclidean distance between the centers of 2 nodes **/
-int32 Floor::DistanceBetweenNodes(TSharedPtr<FloorNode> NodeA, TSharedPtr<FloorNode> NodeB)
+int32 BSP::DistanceBetweenNodes(TSharedPtr<BSPNode> NodeA, TSharedPtr<BSPNode> NodeB)
 {
 	if (NodeA == nullptr || NodeB == nullptr)
 	{
