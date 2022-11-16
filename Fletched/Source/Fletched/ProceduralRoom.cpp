@@ -5,6 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "BSP3d.h"
 #include "BSP3dNode.h"
+#include "PlayerCharacter.h"
 
 // Sets default values
 AProceduralRoom::AProceduralRoom()
@@ -21,12 +22,27 @@ void AProceduralRoom::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TSharedPtr<BSP3d> TheFloor(new BSP3d());
-	TheFloor->Partition();
+	//Bind Generate Dungeon Room to the F button for debug
+	Character = Cast<APlayerCharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
+	if(Character == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Not working"));
+		return;
+	}
+	Character->OnUsePrimarySkill.AddDynamic(this, &AProceduralRoom::GenerateRoom);
+}
 
-	TheFloor->DrawBSPNodes(GetWorld());
+void AProceduralRoom::GenerateRoom()
+{
+	//Temporary flush debug lines for debugging
+	FlushPersistentDebugLines(GetWorld());
+	
+	TSharedPtr<BSP3d> TheRoom(new BSP3d());
+	TheRoom->Partition();
 
-	UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheFloor->GetPartitionedNodes().Num());
+	TheRoom->DrawBSPNodes(GetWorld());
+
+	UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheRoom->GetPartitionedNodes().Num());
 }
 
 // Called every frame

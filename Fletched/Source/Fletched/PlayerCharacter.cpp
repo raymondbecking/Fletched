@@ -130,7 +130,7 @@ void APlayerCharacter::OnPrimaryReleaseAction()
 void APlayerCharacter::OnPrimarySkill()
 {
 	//TODO: Create system to hold all aquired skills and allow for switching between skills
-	if(GetWorld() != nullptr)
+	/*if(GetWorld() != nullptr)
 	{
 		// Enable slowmotion if it wasn't already
 		if(UGameplayStatics::GetGlobalTimeDilation(GetWorld()) != SlowMotionMultiplier)
@@ -142,7 +142,9 @@ void APlayerCharacter::OnPrimarySkill()
 		{
 			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);			
 		}
-	}
+	}*/
+	// Trigger skill
+	OnUsePrimarySkill.Broadcast();
 }
 
 

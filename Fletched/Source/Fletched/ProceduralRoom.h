@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ProceduralRoom.generated.h"
 
+class APlayerCharacter;
+
 UCLASS()
 class FLETCHED_API AProceduralRoom : public AActor
 {
@@ -23,7 +25,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable)
+	void GenerateRoom();
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Room, meta = (AllowPrivateAccess=true))
 	TObjectPtr<UStaticMeshComponent> FloorMesh;
+
+	APlayerCharacter* Character;
 };

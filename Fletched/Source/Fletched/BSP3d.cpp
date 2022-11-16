@@ -384,6 +384,7 @@ void BSP3d::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates
 	DrawDebugLine(World, BottomLowerLeft, TopLowerLeft, DebugColor, true, -1, 0, 20.f);
 }
 
+//TODO: Change to support Z coordinate
 /** Traverse Tree Recursively using Depth-first-search preorder to connect all nodes in the tree **/
 void BSP3d::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> RootNode)
 {
@@ -426,6 +427,7 @@ void BSP3d::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> RootNod
 	ConnectNodes(World, RootNode->GetChildNodeB());	
 }
 
+//TODO: Change to support Z coordinate
 /** Finds the best nodes to connect from both the NodeA side and NodeB side and calls CreateHallway on success **/
 bool BSP3d::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, ESplitOrientation ConnectOrientation)
 {
@@ -493,6 +495,7 @@ bool BSP3d::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA
 	return false;	
 }
 
+//TODO: Change to support Z coordinate
 void BSP3d::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, int32 OverlapStart, int32 OverlapEnd)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Creating Hallway"));
@@ -536,6 +539,7 @@ TSharedPtr<BSP3dNode> BSP3d::FindRootNode(TSharedPtr<BSP3dNode> InNode)
 	return InNode;
 }
 
+//TODO: Change to support square surface instead of line
 /** Not actual overlap is calculated, but rather what part of 2 sides of different nodes align **/
 bool BSP3d::CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
                                 int32& OverlapStart, int32& OverlapEnd)

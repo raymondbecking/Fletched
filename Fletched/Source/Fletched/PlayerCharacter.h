@@ -18,6 +18,7 @@ class USoundBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUseItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHoldItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReleaseItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnUsePrimarySkill);
 // Declaration of the delegate that will be called when Slide is triggered
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartCameraTilt);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopCameraTilt);
@@ -57,6 +58,10 @@ public:
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(BlueprintAssignable, Category = "Interaction")
 	FOnReleaseItem OnReleaseItem;
+
+	/** Delegate to whom anyone can subscribe to receive this event */
+	UPROPERTY(BlueprintAssignable, Category = "Interaction")
+	FOnUsePrimarySkill OnUsePrimarySkill;
 
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(BlueprintAssignable, Category = "Slide")
