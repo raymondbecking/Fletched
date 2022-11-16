@@ -3,8 +3,8 @@
 
 #include "ProceduralRoom.h"
 #include "DrawDebugHelpers.h"
-#include "BSP.h"
-#include "BSPNode.h"
+#include "BSP3d.h"
+#include "BSP3dNode.h"
 
 // Sets default values
 AProceduralRoom::AProceduralRoom()
@@ -21,12 +21,12 @@ void AProceduralRoom::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TSharedPtr<BSP> TheFloor(new BSP());
+	TSharedPtr<BSP3d> TheFloor(new BSP3d());
 	TheFloor->Partition();
 
 	TheFloor->DrawBSPNodes(GetWorld());
 
-	UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheFloor->GetPartitionedBSPNodes().Num());
+	UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheFloor->GetPartitionedNodes().Num());
 }
 
 // Called every frame
