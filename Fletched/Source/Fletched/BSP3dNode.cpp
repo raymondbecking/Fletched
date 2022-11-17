@@ -8,7 +8,7 @@ BSP3dNode::BSP3dNode()
 	UE_LOG(LogTemp, Warning, TEXT("BSP3dNode created."));
 }
 
-BSP3dNode::BSP3dNode(const FCornerCoordinates& Coordinates)
+BSP3dNode::BSP3dNode(const FCornerCoordinates3d& Coordinates)
 {
 	CornerCoordinates.BackUpperLeftX = Coordinates.BackUpperLeftX;
 	CornerCoordinates.BackUpperLeftY = Coordinates.BackUpperLeftY;

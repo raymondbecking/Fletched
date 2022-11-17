@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-enum class ESplitOrientation;
+enum class ESplitOrientation3d;
 
-struct FCornerCoordinates
+struct FCornerCoordinates3d
 {
 	int32 BackUpperLeftX;
 	int32 BackUpperLeftY;
@@ -16,11 +16,11 @@ class BSP3dNode
 {
 public:
 	BSP3dNode();
-	BSP3dNode(const FCornerCoordinates& Coordinates);
+	BSP3dNode(const FCornerCoordinates3d& Coordinates);
 	~BSP3dNode();
 
-	FORCEINLINE FCornerCoordinates GetCornerCoordinates() const { return CornerCoordinates; }
-	FORCEINLINE void SetCornerCoordinates(FCornerCoordinates Coordinates) { CornerCoordinates = Coordinates; }
+	FORCEINLINE FCornerCoordinates3d GetCornerCoordinates() const { return CornerCoordinates; }
+	FORCEINLINE void SetCornerCoordinates(FCornerCoordinates3d Coordinates) { CornerCoordinates = Coordinates; }
 
 	FORCEINLINE static int32 GetNodeCount() { return NodeCount; }
 
@@ -31,13 +31,13 @@ public:
 	FORCEINLINE TSharedPtr<BSP3dNode> GetChildNodeB() const { return ChildNodeB; }
 	FORCEINLINE void SetChildNodes(TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB) { ChildNodeA = NodeA, ChildNodeB = NodeB; }
 
-	FORCEINLINE ESplitOrientation GetSplitOrientation() const { return SplitOrientation; }
-	FORCEINLINE void SetSplitOrientation(ESplitOrientation Orientation) { SplitOrientation = Orientation; }
+	FORCEINLINE ESplitOrientation3d GetSplitOrientation() const { return SplitOrientation; }
+	FORCEINLINE void SetSplitOrientation(ESplitOrientation3d Orientation) { SplitOrientation = Orientation; }
 
 	FORCEINLINE TSharedPtr<BSP3dNode> GetHallwayNode() const { return HallwayNode; }
 	FORCEINLINE void SetHallwayNode(TSharedPtr<BSP3dNode> Hallway) { HallwayNode = Hallway; }
 private:
-	FCornerCoordinates CornerCoordinates;
+	FCornerCoordinates3d CornerCoordinates;
 
 	static int32 NodeCount;
 
@@ -46,7 +46,7 @@ private:
 	TSharedPtr<BSP3dNode> ChildNodeB;
 	TSharedPtr<BSP3dNode> HallwayNode;
 
-	ESplitOrientation SplitOrientation;
+	ESplitOrientation3d SplitOrientation;
 	
 	//TArray<TSharedPtr<BSP3dNode>> ChildNodes;
 };

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "BSP3dNode.h"
 
-enum class ESplitOrientation
+enum class ESplitOrientation3d
 {
 	ESO_Horizontal,
 	ESO_Vertical,
@@ -19,18 +19,18 @@ public:
 	void Partition();
 	int32 CoinFlip();
 	float DiceRoll();
-	bool ShouldSplitNode(TSharedPtr<BSP3dNode> InNode, ESplitOrientation Orientation);
+	bool ShouldSplitNode(TSharedPtr<BSP3dNode> InNode, ESplitOrientation3d Orientation);
 	bool SplitAttempt(TSharedPtr<BSP3dNode> InNode);
 	void SplitHorizontal(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, TSharedPtr<BSP3dNode> InC);
 	void SplitVertical(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, TSharedPtr<BSP3dNode> InC);
 	void SplitDepth(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, TSharedPtr<BSP3dNode> InC);
-	FCornerCoordinates ResizeRoom(FCornerCoordinates Coordinates, float ResizePercent);
+	FCornerCoordinates3d ResizeRoom(FCornerCoordinates3d Coordinates, float ResizePercent);
 	
 	void DrawBSPNodes(TObjectPtr<UWorld> World);
-	void DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor);
+	void DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates3d Coordinates, FColor DebugColor);
 
 	void ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> RootNode);	
-	bool ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, ESplitOrientation ConnectOrientation);
+	bool ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, ESplitOrientation3d ConnectOrientation);
 	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, int32 OverlapStart, int32 OverlapEnd);
 	
 	TSharedPtr<BSP3dNode> FindRootNode(TSharedPtr<BSP3dNode> InNode);

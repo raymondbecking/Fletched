@@ -2,6 +2,8 @@
 
 
 #include "ProceduralRoom.h"
+
+#include "BSP.h"
 #include "DrawDebugHelpers.h"
 #include "BSP3d.h"
 #include "BSP3dNode.h"
@@ -36,13 +38,18 @@ void AProceduralRoom::GenerateRoom()
 {
 	//Temporary flush debug lines for debugging
 	FlushPersistentDebugLines(GetWorld());
-	
+
+	// 2D dungeon
+	//TSharedPtr<BSP3d> TheRoom(new BSP());
+
+	// 3D dungeon
 	TSharedPtr<BSP3d> TheRoom(new BSP3d());
 	TheRoom->Partition();
 
 	TheRoom->DrawBSPNodes(GetWorld());
 
-	UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheRoom->GetPartitionedNodes().Num());
+	//UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheRoom->GetPartitionedNodes().Num());
+	//UE_LOG(LogTemp, Warning, TEXT("Number of nodes in partitioned floor stack: %d"), TheRoom->GetPartitionedBSPNodes().Num());
 }
 
 // Called every frame

@@ -38,7 +38,7 @@ BSP3d::~BSP3d()
 
 void BSP3d::Partition()
 {
-	FCornerCoordinates CornerCoordinatesA = {0,0, 0,
+	FCornerCoordinates3d CornerCoordinatesA = {0,0, 0,
 		BSPGridSizeX, BSPGridSizeY, BSPGridSizeZ};
 	NodeStack.Push(TSharedPtr<BSP3dNode>(new BSP3dNode(CornerCoordinatesA)));
 
@@ -64,11 +64,11 @@ float BSP3d::DiceRoll()
 	return FMath::FRandRange(0.f, 1.f);
 }
 
-bool BSP3d::ShouldSplitNode(TSharedPtr<BSP3dNode> InNode, ESplitOrientation Orientation)
+bool BSP3d::ShouldSplitNode(TSharedPtr<BSP3dNode> InNode, ESplitOrientation3d Orientation)
 {
-	FCornerCoordinates CornerCoordinates = InNode->GetCornerCoordinates();
+	FCornerCoordinates3d CornerCoordinates = InNode->GetCornerCoordinates();
 
-	if(Orientation == ESplitOrientation::ESO_Horizontal)
+	if(Orientation == ESplitOrientation3d::ESO_Horizontal)
 	{
 		int32 NodeLength = CornerCoordinates.FrontLowerRightY - CornerCoordinates.BackUpperLeftY;
 		float PercentChanceOfSplit = (float)NodeLength / (float)BSPGridSizeY;
@@ -86,7 +86,7 @@ bool BSP3d::ShouldSplitNode(TSharedPtr<BSP3dNode> InNode, ESplitOrientation Orie
 		}
 		
 	}
-	else if(Orientation == ESplitOrientation::ESO_Vertical)
+	else if(Orientation == ESplitOrientation3d::ESO_Vertical)
 	{
 		int32 NodeWidth = CornerCoordinates.FrontLowerRightX - CornerCoordinates.BackUpperLeftX;
 		float PercentChanceOfSplit = (float)NodeWidth / (float)BSPGridSizeX;
@@ -102,7 +102,7 @@ bool BSP3d::ShouldSplitNode(TSharedPtr<BSP3dNode> InNode, ESplitOrientation Orie
 			return true;
 		}
 	}
-	else if(Orientation == ESplitOrientation::ESO_Depth)
+	else if(Orientation == ESplitOrientation3d::ESO_Depth)
 	{
 		int32 NodeDepth = CornerCoordinates.FrontLowerRightZ - CornerCoordinates.BackUpperLeftZ;
 		float PercentChanceOfSplit = (float)NodeDepth / (float)BSPGridSizeZ;
@@ -126,7 +126,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 	int32 HorizontalOrVerticalOrDepth = CoinFlip();
 	if(HorizontalOrVerticalOrDepth == 0)
 	{
-		if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Horizontal))
+		if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Horizontal))
 		{
 			//Try to split node Horizontally
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -135,7 +135,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 			SplitHorizontal(InNode, B, C);
 			return true;
 		}
-		else if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Vertical))
+		else if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Vertical))
 		{
 			//Try to split node Vertically
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -144,7 +144,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 			SplitVertical(InNode, B, C);
 			return true;
 		}
-		else if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Depth))
+		else if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Depth))
 		{
 			//Try to split node Vertically
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -156,7 +156,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 	}
 	else if (HorizontalOrVerticalOrDepth == 1)
 	{
-		if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Vertical))
+		if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Vertical))
 		{
 			//Try to split node Vertically
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -165,7 +165,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 			SplitVertical(InNode, B, C);
 			return true;
 		}
-		else if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Horizontal))
+		else if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Horizontal))
 		{
 			//Try to split node Horizontally
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -174,7 +174,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 			SplitHorizontal(InNode, B, C);
 			return true;
 		}
-		else if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Depth))
+		else if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Depth))
 		{
 			//Try to split node Vertically
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -186,7 +186,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 	}
 	else if (HorizontalOrVerticalOrDepth == 2)
 	{
-		if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Depth))
+		if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Depth))
 		{
 			//Try to split node Vertically
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -195,7 +195,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 			SplitDepth(InNode, B, C);
 			return true;
 		}
-		else if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Vertical))
+		else if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Vertical))
 		{
 			//Try to split node Vertically
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -204,7 +204,7 @@ bool BSP3d::SplitAttempt(TSharedPtr<BSP3dNode> InNode)
 			SplitVertical(InNode, B, C);
 			return true;
 		}
-		else if(ShouldSplitNode(InNode, ESplitOrientation::ESO_Horizontal))
+		else if(ShouldSplitNode(InNode, ESplitOrientation3d::ESO_Horizontal))
 		{
 			//Try to split node Horizontally
 			TSharedPtr<BSP3dNode> B(new BSP3dNode());
@@ -224,7 +224,7 @@ void BSP3d::SplitHorizontal(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB
 	InA->SetChildNodes(InB, InC);
 	
 	//New BSP3dNode top
-	FCornerCoordinates CornerCoordinatesB;
+	FCornerCoordinates3d CornerCoordinatesB;
 	CornerCoordinatesB.BackUpperLeftX = InA->GetCornerCoordinates().BackUpperLeftX;
 	CornerCoordinatesB.BackUpperLeftY = InA->GetCornerCoordinates().BackUpperLeftY;
 	CornerCoordinatesB.BackUpperLeftZ = InA->GetCornerCoordinates().BackUpperLeftZ;
@@ -234,11 +234,11 @@ void BSP3d::SplitHorizontal(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB
 
 	InB->SetCornerCoordinates(CornerCoordinatesB);
 	InB->SetParentNode(InA);
-	InB->SetSplitOrientation(ESplitOrientation::ESO_Horizontal);
+	InB->SetSplitOrientation(ESplitOrientation3d::ESO_Horizontal);
 	NodeStack.Push(InB);
 
 	//New BSP3dNode bottom
-	FCornerCoordinates CornerCoordinatesC;
+	FCornerCoordinates3d CornerCoordinatesC;
 	CornerCoordinatesC.BackUpperLeftX = InA->GetCornerCoordinates().BackUpperLeftX;
 	CornerCoordinatesC.BackUpperLeftY = SplitPointY;
 	CornerCoordinatesC.BackUpperLeftZ = InA->GetCornerCoordinates().BackUpperLeftZ;
@@ -248,7 +248,7 @@ void BSP3d::SplitHorizontal(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB
 
 	InC->SetCornerCoordinates(CornerCoordinatesC);
 	InC->SetParentNode(InA);
-	InB->SetSplitOrientation(ESplitOrientation::ESO_Horizontal);
+	InB->SetSplitOrientation(ESplitOrientation3d::ESO_Horizontal);
 	NodeStack.Push(InC);
 }
 
@@ -259,7 +259,7 @@ void BSP3d::SplitVertical(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, 
 	InA->SetChildNodes(InB, InC);
 	
 	//New BSP3dNode left
-	FCornerCoordinates CornerCoordinatesB;
+	FCornerCoordinates3d CornerCoordinatesB;
 	CornerCoordinatesB.BackUpperLeftX = InA->GetCornerCoordinates().BackUpperLeftX;
 	CornerCoordinatesB.BackUpperLeftY = InA->GetCornerCoordinates().BackUpperLeftY;
 	CornerCoordinatesB.BackUpperLeftZ = InA->GetCornerCoordinates().BackUpperLeftZ;
@@ -269,11 +269,11 @@ void BSP3d::SplitVertical(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, 
 
 	InB->SetCornerCoordinates(CornerCoordinatesB);
 	InB->SetParentNode(InA);
-	InB->SetSplitOrientation(ESplitOrientation::ESO_Vertical);
+	InB->SetSplitOrientation(ESplitOrientation3d::ESO_Vertical);
 	NodeStack.Push(InB);
 
 	//New BSP3dNode right
-	FCornerCoordinates CornerCoordinatesC;
+	FCornerCoordinates3d CornerCoordinatesC;
 	CornerCoordinatesC.BackUpperLeftX = SplitPointX;
 	CornerCoordinatesC.BackUpperLeftY = InA->GetCornerCoordinates().BackUpperLeftY;
 	CornerCoordinatesC.BackUpperLeftZ = InA->GetCornerCoordinates().BackUpperLeftZ;
@@ -283,7 +283,7 @@ void BSP3d::SplitVertical(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, 
 
 	InC->SetCornerCoordinates(CornerCoordinatesC);
 	InC->SetParentNode(InA);
-	InB->SetSplitOrientation(ESplitOrientation::ESO_Vertical);
+	InB->SetSplitOrientation(ESplitOrientation3d::ESO_Vertical);
 	NodeStack.Push(InC);
 }
 
@@ -294,7 +294,7 @@ void BSP3d::SplitDepth(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, TSh
 	InA->SetChildNodes(InB, InC);
 	
 	//New BSP3dNode left
-	FCornerCoordinates CornerCoordinatesB;
+	FCornerCoordinates3d CornerCoordinatesB;
 	CornerCoordinatesB.BackUpperLeftX = InA->GetCornerCoordinates().BackUpperLeftX;
 	CornerCoordinatesB.BackUpperLeftY = InA->GetCornerCoordinates().BackUpperLeftY;
 	CornerCoordinatesB.BackUpperLeftZ = InA->GetCornerCoordinates().BackUpperLeftZ;
@@ -304,11 +304,11 @@ void BSP3d::SplitDepth(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, TSh
 
 	InB->SetCornerCoordinates(CornerCoordinatesB);
 	InB->SetParentNode(InA);
-	InB->SetSplitOrientation(ESplitOrientation::ESO_Depth);
+	InB->SetSplitOrientation(ESplitOrientation3d::ESO_Depth);
 	NodeStack.Push(InB);
 
 	//New BSP3dNode right
-	FCornerCoordinates CornerCoordinatesC;
+	FCornerCoordinates3d CornerCoordinatesC;
 	CornerCoordinatesC.BackUpperLeftX = InA->GetCornerCoordinates().BackUpperLeftX;
 	CornerCoordinatesC.BackUpperLeftY = InA->GetCornerCoordinates().BackUpperLeftY;
 	CornerCoordinatesC.BackUpperLeftZ = SplitPointZ;
@@ -318,25 +318,29 @@ void BSP3d::SplitDepth(TSharedPtr<BSP3dNode> InA, TSharedPtr<BSP3dNode> InB, TSh
 
 	InC->SetCornerCoordinates(CornerCoordinatesC);
 	InC->SetParentNode(InA);
-	InB->SetSplitOrientation(ESplitOrientation::ESO_Depth);
+	InB->SetSplitOrientation(ESplitOrientation3d::ESO_Depth);
 	NodeStack.Push(InC);
 }
 
-FCornerCoordinates BSP3d::ResizeRoom(FCornerCoordinates Coordinates, float ResizePercent)
+FCornerCoordinates3d BSP3d::ResizeRoom(FCornerCoordinates3d Coordinates, float ResizePercent)
 {
 	//Calculate new length of each side of the square
 	int32 ResizedWidth = (Coordinates.FrontLowerRightX - Coordinates.BackUpperLeftX) * ResizePercent;
 	int32 ResizedHeight = (Coordinates.FrontLowerRightY - Coordinates.BackUpperLeftY) * ResizePercent;
+	int32 ResizedDepth = (Coordinates.FrontLowerRightZ - Coordinates.BackUpperLeftZ) * ResizePercent;
 
 	//Calculate how much to move each corner
 	int32 ResizedXCoordinate = (Coordinates.FrontLowerRightX - Coordinates.BackUpperLeftX - ResizedWidth) / 2;
 	int32 ResizedYCoordinate = (Coordinates.FrontLowerRightY - Coordinates.BackUpperLeftY - ResizedHeight) / 2;
+	int32 ResizedZCoordinate = (Coordinates.FrontLowerRightZ - Coordinates.BackUpperLeftZ - ResizedDepth) / 2;
 	
-	FCornerCoordinates ResizedCoordinates = Coordinates;
+	FCornerCoordinates3d ResizedCoordinates = Coordinates;
 	ResizedCoordinates.BackUpperLeftX += ResizedXCoordinate;
 	ResizedCoordinates.BackUpperLeftY += ResizedYCoordinate;
+	ResizedCoordinates.BackUpperLeftZ += ResizedZCoordinate;
 	ResizedCoordinates.FrontLowerRightX -= ResizedXCoordinate;
 	ResizedCoordinates.FrontLowerRightY -= ResizedYCoordinate;
+	ResizedCoordinates.FrontLowerRightZ -= ResizedZCoordinate;
 	return ResizedCoordinates;
 }
 
@@ -345,18 +349,18 @@ void BSP3d::DrawBSPNodes(TObjectPtr<UWorld> World)
 	//Resize and draw all rooms
 	for (int32 i = 0; i < PartitionedNodes.Num(); i++)
 	{
-		FCornerCoordinates Coordinates = PartitionedNodes[i]->GetCornerCoordinates();
+		FCornerCoordinates3d Coordinates = PartitionedNodes[i]->GetCornerCoordinates();
 
-		//float ResizePercent = FMath::RandRange(MinRoomSizePercent, MaxRoomSizePercent);
-		//Coordinates = ResizeRoom(Coordinates, ResizePercent);
-		//PartitionedNodes[i]->SetCornerCoordinates(Coordinates);
+		float ResizePercent = FMath::RandRange(MinRoomSizePercent, MaxRoomSizePercent);
+		Coordinates = ResizeRoom(Coordinates, ResizePercent);
+		PartitionedNodes[i]->SetCornerCoordinates(Coordinates);
 		DrawBSPNode(World, Coordinates, FColor::Blue);
 	}
 	//Connect all nodes with hallways
 	//ConnectNodes(World, FindRootNode(PartitionedNodes[0]));
 }
 
-void BSP3d::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, FColor DebugColor)
+void BSP3d::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates3d Coordinates, FColor DebugColor)
 {
 	const FVector BottomUpperLeft(Coordinates.BackUpperLeftX * UnitLength, Coordinates.BackUpperLeftY * UnitLength, Coordinates.FrontLowerRightZ * UnitLength);
 	const FVector BottomUpperRight(Coordinates.FrontLowerRightX * UnitLength, Coordinates.BackUpperLeftY * UnitLength, Coordinates.FrontLowerRightZ * UnitLength);
@@ -368,16 +372,19 @@ void BSP3d::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates
 	const FVector TopLowerLeft(Coordinates.BackUpperLeftX * UnitLength, Coordinates.FrontLowerRightY * UnitLength, Coordinates.BackUpperLeftZ * UnitLength);
 	const FVector TopLowerRight(Coordinates.FrontLowerRightX * UnitLength, Coordinates.FrontLowerRightY * UnitLength, Coordinates.BackUpperLeftZ * UnitLength);
 
+	//Node floor/bottom
 	DrawDebugLine(World, BottomUpperLeft, BottomUpperRight, DebugColor, true, -1, 0, 20.f);
 	DrawDebugLine(World, BottomUpperRight, BottomLowerRight, DebugColor, true, -1, 0, 20.f);
 	DrawDebugLine(World, BottomLowerRight, BottomLowerLeft, DebugColor, true, -1, 0, 20.f);
 	DrawDebugLine(World, BottomLowerLeft, BottomUpperLeft, DebugColor, true, -1, 0, 20.f);
-	
+
+	//Node walls/sides
 	DrawDebugLine(World, TopUpperLeft, TopUpperRight, DebugColor, true, -1, 0, 20.f);
 	DrawDebugLine(World, TopUpperRight, TopLowerRight, DebugColor, true, -1, 0, 20.f);
 	DrawDebugLine(World, TopLowerRight, TopLowerLeft, DebugColor, true, -1, 0, 20.f);
 	DrawDebugLine(World, TopLowerLeft, TopUpperLeft, DebugColor, true, -1, 0, 20.f);	
-	
+
+	//Node roof/top
 	DrawDebugLine(World, BottomUpperLeft, TopUpperLeft, DebugColor, true, -1, 0, 20.f);
 	DrawDebugLine(World, BottomUpperRight, TopUpperRight, DebugColor, true, -1, 0, 20.f);
 	DrawDebugLine(World, BottomLowerRight, TopLowerRight, DebugColor, true, -1, 0, 20.f);
@@ -429,7 +436,7 @@ void BSP3d::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> RootNod
 
 //TODO: Change to support Z coordinate
 /** Finds the best nodes to connect from both the NodeA side and NodeB side and calls CreateHallway on success **/
-bool BSP3d::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, ESplitOrientation ConnectOrientation)
+bool BSP3d::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, ESplitOrientation3d ConnectOrientation)
 {
 	if (NodeA == nullptr || NodeB == nullptr)
 	{
@@ -470,14 +477,14 @@ bool BSP3d::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA
 	int32 OverlapEnd;
 	bool bHasOverlap;
 	
-	if (ConnectOrientation == ESplitOrientation::ESO_Horizontal)
+	if (ConnectOrientation == ESplitOrientation3d::ESO_Horizontal)
 	{
 		bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().BackUpperLeftX,
 										 NodeA->GetCornerCoordinates().FrontLowerRightX,
 										 NodeB->GetCornerCoordinates().BackUpperLeftX,
 										 NodeB->GetCornerCoordinates().FrontLowerRightX, OverlapStart, OverlapEnd);
 	}
-	else// if (ConnectOrientation == ESplitOrientation::ESO_Vertical)
+	else// if (ConnectOrientation == ESplitOrientation3d::ESO_Vertical)
 		{
 		bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().BackUpperLeftY,
 										 NodeA->GetCornerCoordinates().FrontLowerRightY,
@@ -501,7 +508,7 @@ void BSP3d::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA,
 	UE_LOG(LogTemp, Warning, TEXT("Creating Hallway"));
 
 	TSharedPtr<BSP3dNode> HallwayNode(new BSP3dNode());
-	FCornerCoordinates HallwayCornerCoordinates;
+	FCornerCoordinates3d HallwayCornerCoordinates;
 	
 	int32 HallwayRadius = HallwayMinWidth / 2;
 	int32 HallwayRandomPos = FMath::RandRange(OverlapStart + HallwayRadius,OverlapEnd - HallwayRadius);
