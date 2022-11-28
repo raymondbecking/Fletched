@@ -34,8 +34,9 @@ public:
 	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, int32 OverlapStart, int32 OverlapEnd);
 	
 	TSharedPtr<BSP3dNode> FindRootNode(TSharedPtr<BSP3dNode> InNode);
-	bool CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
-	                      int32 &OverlapStart, int32 &OverlapEnd);
+	bool CalculateHasOverlap(int32 X1NodeA, int32 X2NodeA, int32 Y1NodeA, int32 Y2NodeA,
+							 int32 X1NodeB, int32 X2NodeB, int32 Y1NodeB, int32 Y2NodeB,
+	                         int32& OverlapStartX, int32& OverlapEndX, int32& OverlapStartY, int32& OverlapEndY);
 	int32 DistanceBetweenNodes(TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB);
 	
 	FORCEINLINE TArray<TSharedPtr<BSP3dNode>> GetPartitionedNodes() const { return PartitionedNodes; }

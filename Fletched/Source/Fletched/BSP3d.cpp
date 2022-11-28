@@ -546,14 +546,15 @@ TSharedPtr<BSP3dNode> BSP3d::FindRootNode(TSharedPtr<BSP3dNode> InNode)
 	return InNode;
 }
 
-//TODO: Change to support square surface instead of line
 /** Not actual overlap is calculated, but rather what part of 2 sides of different nodes align **/
-bool BSP3d::CalculateHasOverlap(int32 LineStartA, int32 LineEndA, int32 LineStartB, int32 LineEndB,
-                                int32& OverlapStart, int32& OverlapEnd)
+bool BSP3d::CalculateHasOverlap(int32 X1NodeA, int32 X2NodeA, int32 Y1NodeA, int32 Y2NodeA, int32 X1NodeB, int32 X2NodeB, int32 Y1NodeB, int32 Y2NodeB,
+                                int32& OverlapStartX, int32& OverlapEndX, int32& OverlapStartY, int32& OverlapEndY)
 {
-	OverlapStart = TMathUtil<int32>::Max(LineStartA, LineStartB);
-	OverlapEnd = TMathUtil<int32>::Min(LineEndA, LineEndB);
-	return OverlapEnd - OverlapStart > 0;
+	OverlapStartX = TMathUtil<int32>::Max(X1NodeA, X1NodeB);
+	OverlapEndX = TMathUtil<int32>::Min(X2NodeA, X2NodeB);
+	OverlapStartY = TMathUtil<int32>::Max(Y1NodeA, Y1NodeB);
+	OverlapEndY = TMathUtil<int32>::Min(Y2NodeA, Y2NodeB);
+	return OverlapEndX - OverlapStartX > 0 || OverlapEndY - OverlapStartY > 0 ;
 }
 
 /** Euclidean distance between the centers of 2 nodes **/
@@ -565,13 +566,15 @@ int32 BSP3d::DistanceBetweenNodes(TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dN
 	}
 	float NodeACenterX = (NodeA->GetCornerCoordinates().FrontLowerRightX + NodeA->GetCornerCoordinates().BackUpperLeftX) / 2;
 	float NodeACenterY = (NodeA->GetCornerCoordinates().FrontLowerRightY + NodeA->GetCornerCoordinates().BackUpperLeftY) / 2;
-	FVector2f NodeACenter = FVector2f(NodeACenterX, NodeACenterY);
+	float NodeACenterZ = (NodeA->GetCornerCoordinates().FrontLowerRightZ + NodeA->GetCornerCoordinates().BackUpperLeftZ) / 2;
+	FVector NodeACenter = FVector(NodeACenterX, NodeACenterY, NodeACenterZ);
 
 	float NodeBCenterX = (NodeB->GetCornerCoordinates().FrontLowerRightX + NodeB->GetCornerCoordinates().BackUpperLeftX) / 2;
 	float NodeBCenterY = (NodeB->GetCornerCoordinates().FrontLowerRightY + NodeB->GetCornerCoordinates().BackUpperLeftY) / 2;
-	FVector2f NodeBCenter = FVector2f(NodeBCenterX, NodeBCenterY);
+	float NodeBCenterZ = (NodeB->GetCornerCoordinates().FrontLowerRightZ + NodeB->GetCornerCoordinates().BackUpperLeftZ) / 2;
+	FVector NodeBCenter = FVector(NodeBCenterX, NodeBCenterY, NodeBCenterZ);
 	
-	return FVector2f::Distance(NodeACenter, NodeBCenter);
+	return FVector::Distance(NodeACenter, NodeBCenter);
 }
 
 
