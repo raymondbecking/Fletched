@@ -354,10 +354,10 @@ void BSP3d::DrawBSPNodes(TObjectPtr<UWorld> World)
 		float ResizePercent = FMath::RandRange(MinRoomSizePercent, MaxRoomSizePercent);
 		Coordinates = ResizeRoom(Coordinates, ResizePercent);
 		PartitionedNodes[i]->SetCornerCoordinates(Coordinates);
-		DrawBSPNode(World, Coordinates, FColor::Blue);
+		DrawBSPNode(World, Coordinates, FColor::Black);
 	}
 	//Connect all nodes with hallways
-	//ConnectNodes(World, FindRootNode(PartitionedNodes[0]));
+	ConnectNodes(World, FindRootNode(PartitionedNodes[0]));
 }
 
 void BSP3d::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates3d Coordinates, FColor DebugColor)
@@ -391,7 +391,6 @@ void BSP3d::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates3d Coordinat
 	DrawDebugLine(World, BottomLowerLeft, TopLowerLeft, DebugColor, true, -1, 0, 20.f);
 }
 
-//TODO: Change to support Z coordinate
 /** Traverse Tree Recursively using Depth-first-search preorder to connect all nodes in the tree **/
 void BSP3d::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> RootNode)
 {
@@ -434,7 +433,6 @@ void BSP3d::ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> RootNod
 	ConnectNodes(World, RootNode->GetChildNodeB());	
 }
 
-//TODO: Change to support Z coordinate
 /** Finds the best nodes to connect from both the NodeA side and NodeB side and calls CreateHallway on success **/
 bool BSP3d::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, ESplitOrientation3d ConnectOrientation)
 {
@@ -473,28 +471,56 @@ bool BSP3d::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA
 		return ConnectAttempt(World, NodeA, NodeB->GetChildNodeB(), ConnectOrientation);
 	}	
 
-	int32 OverlapStart;
-	int32 OverlapEnd;
+	int32 OverlapStartX;
+	int32 OverlapEndX;
+	int32 OverlapStartY;
+	int32 OverlapEndY;
 	bool bHasOverlap;
-	
+
 	if (ConnectOrientation == ESplitOrientation3d::ESO_Horizontal)
 	{
+		//Use 2d FCornerCoordinates for better readability
 		bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().BackUpperLeftX,
-										 NodeA->GetCornerCoordinates().FrontLowerRightX,
-										 NodeB->GetCornerCoordinates().BackUpperLeftX,
-										 NodeB->GetCornerCoordinates().FrontLowerRightX, OverlapStart, OverlapEnd);
+		                                  NodeA->GetCornerCoordinates().FrontLowerRightX,
+		                                  NodeA->GetCornerCoordinates().BackUpperLeftZ,
+										  NodeA->GetCornerCoordinates().FrontLowerRightZ,
+		                                  NodeB->GetCornerCoordinates().BackUpperLeftX,
+		                                  NodeB->GetCornerCoordinates().FrontLowerRightX,
+		                                  NodeB->GetCornerCoordinates().BackUpperLeftZ,
+										  NodeB->GetCornerCoordinates().FrontLowerRightZ,
+		                                  OverlapStartX, OverlapEndX, OverlapStartY, OverlapEndY);
 	}
-	else// if (ConnectOrientation == ESplitOrientation3d::ESO_Vertical)
-		{
+	else if (ConnectOrientation == ESplitOrientation3d::ESO_Vertical)
+	{
+		//Use 2d FCornerCoordinates for better readability
 		bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().BackUpperLeftY,
-										 NodeA->GetCornerCoordinates().FrontLowerRightY,
-										 NodeB->GetCornerCoordinates().BackUpperLeftY,
-										 NodeB->GetCornerCoordinates().FrontLowerRightY, OverlapStart, OverlapEnd);
-		}
+		                                  NodeA->GetCornerCoordinates().FrontLowerRightY,
+		                                  NodeA->GetCornerCoordinates().BackUpperLeftZ,
+										  NodeA->GetCornerCoordinates().FrontLowerRightZ,
+		                                  NodeB->GetCornerCoordinates().BackUpperLeftY,
+		                                  NodeB->GetCornerCoordinates().FrontLowerRightY,
+		                                  NodeB->GetCornerCoordinates().BackUpperLeftZ,
+										  NodeB->GetCornerCoordinates().FrontLowerRightZ,
+		                                  OverlapStartX, OverlapEndX, OverlapStartY, OverlapEndY);
+	}
+	else if (ConnectOrientation == ESplitOrientation3d::ESO_Depth)
+	{
+		//Use 2d FCornerCoordinates for better readability
+		bHasOverlap = CalculateHasOverlap(NodeA->GetCornerCoordinates().BackUpperLeftX,
+		                                  NodeA->GetCornerCoordinates().FrontLowerRightX,
+		                                  NodeA->GetCornerCoordinates().BackUpperLeftY,
+										  NodeA->GetCornerCoordinates().FrontLowerRightY,
+		                                  NodeB->GetCornerCoordinates().BackUpperLeftX,
+		                                  NodeB->GetCornerCoordinates().FrontLowerRightX,
+		                                  NodeB->GetCornerCoordinates().BackUpperLeftY,
+										  NodeB->GetCornerCoordinates().FrontLowerRightY,
+		                                  OverlapStartX, OverlapEndX, OverlapStartY, OverlapEndY);
+	}
 	if (bHasOverlap)
 	{
 		//Connect the matching nodes
-		CreateHallway(World, NodeA, NodeB, OverlapStart, OverlapEnd);
+		CreateHallway(World, NodeA, NodeB, OverlapStartX, OverlapEndX, OverlapStartY, OverlapEndY);
+		UE_LOG(LogTemp, Warning, TEXT("Nodes have overlap"));		
 		return true;
 	}
 
@@ -502,8 +528,7 @@ bool BSP3d::ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA
 	return false;	
 }
 
-//TODO: Change to support Z coordinate
-void BSP3d::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, int32 OverlapStart, int32 OverlapEnd)
+void BSP3d::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, int32 OverlapStartX, int32 OverlapEndX, int32 OverlapStartY, int32 OverlapEndY)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Creating Hallway"));
 
@@ -511,28 +536,48 @@ void BSP3d::CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA,
 	FCornerCoordinates3d HallwayCornerCoordinates;
 	
 	int32 HallwayRadius = HallwayMinWidth / 2;
-	int32 HallwayRandomPos = FMath::RandRange(OverlapStart + HallwayRadius,OverlapEnd - HallwayRadius);
+	int32 HallwayRandomPosX = FMath::RandRange(OverlapStartX + HallwayRadius,OverlapEndX - HallwayRadius);
+	int32 HallwayRandomPosY = FMath::RandRange(OverlapStartY + HallwayRadius,OverlapEndY - HallwayRadius);
 	FColor HallwayColor = FColor::Black;
 
 	if (NodeB->GetCornerCoordinates().BackUpperLeftY > NodeA->GetCornerCoordinates().FrontLowerRightY)
 	{
-		HallwayCornerCoordinates.BackUpperLeftX = HallwayRandomPos - HallwayRadius;
+		/*HallwayCornerCoordinates.BackUpperLeftX = HallwayRandomPosX - HallwayRadius;
 		HallwayCornerCoordinates.BackUpperLeftY = NodeA->GetCornerCoordinates().FrontLowerRightY;
-		HallwayCornerCoordinates.FrontLowerRightX = HallwayRandomPos + HallwayRadius;
+		HallwayCornerCoordinates.BackUpperLeftZ = NodeA->GetCornerCoordinates().FrontLowerRightZ;
+		HallwayCornerCoordinates.FrontLowerRightX = HallwayRandomPosX + HallwayRadius;
 		HallwayCornerCoordinates.FrontLowerRightY = NodeB->GetCornerCoordinates().BackUpperLeftY;
-		HallwayColor = FColor::Green;		
+		HallwayCornerCoordinates.FrontLowerRightZ = NodeB->GetCornerCoordinates().BackUpperLeftZ;*/
+		HallwayCornerCoordinates.BackUpperLeftX = HallwayRandomPosX - HallwayRadius;
+		HallwayCornerCoordinates.BackUpperLeftY = NodeB->GetCornerCoordinates().BackUpperLeftY;
+		HallwayCornerCoordinates.BackUpperLeftZ = HallwayRandomPosY - HallwayRadius;
+		HallwayCornerCoordinates.FrontLowerRightX = HallwayRandomPosX + HallwayRadius;
+		HallwayCornerCoordinates.FrontLowerRightY = NodeA->GetCornerCoordinates().FrontLowerRightY;
+		HallwayCornerCoordinates.FrontLowerRightZ = HallwayRandomPosY + HallwayRadius;
+		HallwayColor = FColor::Red;		
 	}
-	else// if(NodeB->GetCornerCoordinates().BackUpperLeftX > NodeA->GetCornerCoordinates().FrontLowerRightX)
+	else if(NodeB->GetCornerCoordinates().BackUpperLeftX > NodeA->GetCornerCoordinates().FrontLowerRightX)
 	{
 		HallwayCornerCoordinates.BackUpperLeftX = NodeB->GetCornerCoordinates().BackUpperLeftX;
-		HallwayCornerCoordinates.BackUpperLeftY = HallwayRandomPos - HallwayRadius;
+		HallwayCornerCoordinates.BackUpperLeftY = HallwayRandomPosX - HallwayRadius;
+		HallwayCornerCoordinates.BackUpperLeftZ = HallwayRandomPosY - HallwayRadius;
 		HallwayCornerCoordinates.FrontLowerRightX = NodeA->GetCornerCoordinates().FrontLowerRightX;
-		HallwayCornerCoordinates.FrontLowerRightY = HallwayRandomPos + HallwayRadius;
-		HallwayColor = FColor::Red;
+		HallwayCornerCoordinates.FrontLowerRightY = HallwayRandomPosX + HallwayRadius;
+		HallwayCornerCoordinates.FrontLowerRightZ = HallwayRandomPosY + HallwayRadius;
+		HallwayColor = FColor::Green;
 	}	
-	
+	else if(NodeB->GetCornerCoordinates().BackUpperLeftZ > NodeA->GetCornerCoordinates().FrontLowerRightZ)
+	{
+		HallwayCornerCoordinates.BackUpperLeftX = HallwayRandomPosX - HallwayRadius;
+		HallwayCornerCoordinates.BackUpperLeftY = HallwayRandomPosY - HallwayRadius;
+		HallwayCornerCoordinates.BackUpperLeftZ = NodeB->GetCornerCoordinates().BackUpperLeftZ;
+		HallwayCornerCoordinates.FrontLowerRightX = HallwayRandomPosX + HallwayRadius;
+		HallwayCornerCoordinates.FrontLowerRightY = HallwayRandomPosY + HallwayRadius;
+		HallwayCornerCoordinates.FrontLowerRightZ = NodeA->GetCornerCoordinates().FrontLowerRightZ;
+		HallwayColor = FColor::Blue;
+	}
 	HallwayNode->SetCornerCoordinates(HallwayCornerCoordinates);
-	//Should Parent node also be the hallways parent? 
+	//TODO: Find proper way to store hallways so they can be accessed and used
 	NodeA->GetParentNode()->SetHallwayNode(HallwayNode);
 	DrawBSPNode(World, HallwayCornerCoordinates, HallwayColor);
 }

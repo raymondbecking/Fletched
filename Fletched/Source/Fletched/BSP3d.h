@@ -31,7 +31,7 @@ public:
 
 	void ConnectNodes(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> RootNode);	
 	bool ConnectAttempt(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, ESplitOrientation3d ConnectOrientation);
-	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, int32 OverlapStart, int32 OverlapEnd);
+	void CreateHallway(TObjectPtr<UWorld> World, TSharedPtr<BSP3dNode> NodeA, TSharedPtr<BSP3dNode> NodeB, int32 OverlapStartX, int32 OverlapEndX, int32 OverlapStartY, int32 OverlapEndY);
 	
 	TSharedPtr<BSP3dNode> FindRootNode(TSharedPtr<BSP3dNode> InNode);
 	bool CalculateHasOverlap(int32 X1NodeA, int32 X2NodeA, int32 Y1NodeA, int32 Y2NodeA,
