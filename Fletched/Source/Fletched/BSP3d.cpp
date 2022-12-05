@@ -7,18 +7,22 @@
 
 BSP3d::BSP3d()
 {
-	BSPGridSizeX = 200;
-	BSPGridSizeY = 200;
-	BSPGridSizeZ = 200;
-	RoomMinX = 20;
-	RoomMinY = 20;
-	RoomMinZ = 20;
+	BSPGridSizeMinX = 100;
+	BSPGridSizeMinY = 100;
+	BSPGridSizeMinZ = 50;
+	
+	BSPGridSizeMaxX = 200;
+	BSPGridSizeMaxY = 200;
+	BSPGridSizeMaxZ = 130;
+	RoomMinX = 30;
+	RoomMinY = 30;
+	RoomMinZ = 30;
 
 	UnitLength = 100.f;
 
 	SplitChance = 1.3f;
 
-	MinRoomSizePercent = 0.4f;
+	MinRoomSizePercent = 0.3f;
 	MaxRoomSizePercent = 0.9f;
 
 	HallwayMinWidth = 2;
@@ -38,6 +42,9 @@ BSP3d::~BSP3d()
 
 void BSP3d::Partition()
 {
+	BSPGridSizeX = FMath::RandRange(BSPGridSizeMinX, BSPGridSizeMaxX);
+	BSPGridSizeY = FMath::RandRange(BSPGridSizeMinY, BSPGridSizeMaxY);
+	BSPGridSizeZ = FMath::RandRange(BSPGridSizeMinZ, BSPGridSizeMaxZ);
 	FCornerCoordinates3d CornerCoordinatesA = {0,0, 0,
 		BSPGridSizeX, BSPGridSizeY, BSPGridSizeZ};
 	NodeStack.Push(TSharedPtr<BSP3dNode>(new BSP3dNode(CornerCoordinatesA)));

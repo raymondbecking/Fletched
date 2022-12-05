@@ -45,7 +45,12 @@ private:
 	TArray<TSharedPtr<BSP3dNode>> NodeStack;
 	TArray<TSharedPtr<BSP3dNode>> PartitionedNodes;
 
-
+	int32 BSPGridSizeMinX;
+	int32 BSPGridSizeMinY;
+	int32 BSPGridSizeMinZ;
+	int32 BSPGridSizeMaxX;
+	int32 BSPGridSizeMaxY;
+	int32 BSPGridSizeMaxZ;
 	int32 BSPGridSizeX;
 	int32 BSPGridSizeY;
 	int32 BSPGridSizeZ;
