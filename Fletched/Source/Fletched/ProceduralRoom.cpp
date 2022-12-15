@@ -40,7 +40,7 @@ void AProceduralRoom::GenerateRoom()
 	FlushPersistentDebugLines(GetWorld());
 
 	// 2D dungeon
-	//TSharedPtr<BSP3d> TheRoom(new BSP());
+	//TSharedPtr<BSP> TheRoom(new BSP());
 
 	// 3D dungeon
 	TSharedPtr<BSP3d> TheRoom(new BSP3d());

@@ -380,22 +380,22 @@ void BSP3d::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates3d Coordinat
 	const FVector TopLowerRight(Coordinates.FrontLowerRightX * UnitLength, Coordinates.FrontLowerRightY * UnitLength, Coordinates.BackUpperLeftZ * UnitLength);
 
 	//Node floor/bottom
-	DrawDebugLine(World, BottomUpperLeft, BottomUpperRight, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, BottomUpperRight, BottomLowerRight, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, BottomLowerRight, BottomLowerLeft, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, BottomLowerLeft, BottomUpperLeft, DebugColor, true, -1, 0, 20.f);
+	DrawDebugLine(World, BottomUpperLeft, BottomUpperRight, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, BottomUpperRight, BottomLowerRight, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, BottomLowerRight, BottomLowerLeft, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, BottomLowerLeft, BottomUpperLeft, DebugColor, true, -1, 0, 40.f);
 
 	//Node walls/sides
-	DrawDebugLine(World, TopUpperLeft, TopUpperRight, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, TopUpperRight, TopLowerRight, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, TopLowerRight, TopLowerLeft, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, TopLowerLeft, TopUpperLeft, DebugColor, true, -1, 0, 20.f);	
+	DrawDebugLine(World, TopUpperLeft, TopUpperRight, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, TopUpperRight, TopLowerRight, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, TopLowerRight, TopLowerLeft, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, TopLowerLeft, TopUpperLeft, DebugColor, true, -1, 0, 40.f);	
 
 	//Node roof/top
-	DrawDebugLine(World, BottomUpperLeft, TopUpperLeft, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, BottomUpperRight, TopUpperRight, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, BottomLowerRight, TopLowerRight, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, BottomLowerLeft, TopLowerLeft, DebugColor, true, -1, 0, 20.f);
+	DrawDebugLine(World, BottomUpperLeft, TopUpperLeft, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, BottomUpperRight, TopUpperRight, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, BottomLowerRight, TopLowerRight, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, BottomLowerLeft, TopLowerLeft, DebugColor, true, -1, 0, 40.f);
 }
 
 /** Traverse Tree Recursively using Depth-first-search preorder to connect all nodes in the tree **/

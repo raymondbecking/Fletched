@@ -253,10 +253,10 @@ void BSP::DrawBSPNode(TObjectPtr<UWorld> World, FCornerCoordinates Coordinates, 
 	const FVector LowerLeft(Coordinates.UpperLeftX * UnitLength, Coordinates.LowerRightY * UnitLength, 0.f);
 	const FVector LowerRight(Coordinates.LowerRightX * UnitLength, Coordinates.LowerRightY * UnitLength, 0.f);
 	
-	DrawDebugLine(World, UpperLeft, UpperRight, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, UpperRight, LowerRight, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, LowerRight, LowerLeft, DebugColor, true, -1, 0, 20.f);
-	DrawDebugLine(World, LowerLeft, UpperLeft, DebugColor, true, -1, 0, 20.f);	
+	DrawDebugLine(World, UpperLeft, UpperRight, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, UpperRight, LowerRight, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, LowerRight, LowerLeft, DebugColor, true, -1, 0, 40.f);
+	DrawDebugLine(World, LowerLeft, UpperLeft, DebugColor, true, -1, 0, 40.f);	
 }
 
 /** Traverse Tree Recursively using Depth-first-search preorder to connect all nodes in the tree **/
