@@ -91,6 +91,9 @@ void APlayerCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 	// Bind use skill event
 	PlayerInputComponent->BindAction("PrimarySkill", IE_Released, this, &APlayerCharacter::OnPrimarySkill);
+
+	// Bind Debug Action
+	PlayerInputComponent->BindAction("DebugAction", IE_Released, this, &APlayerCharacter::OnDebugAction);
 	
 
 	// Enable touchscreen input
@@ -130,7 +133,7 @@ void APlayerCharacter::OnPrimaryReleaseAction()
 void APlayerCharacter::OnPrimarySkill()
 {
 	//TODO: Create system to hold all aquired skills and allow for switching between skills
-	/*if(GetWorld() != nullptr)
+	if(GetWorld() != nullptr)
 	{
 		// Enable slowmotion if it wasn't already
 		if(UGameplayStatics::GetGlobalTimeDilation(GetWorld()) != SlowMotionMultiplier)
@@ -142,9 +145,14 @@ void APlayerCharacter::OnPrimarySkill()
 		{
 			UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);			
 		}
-	}*/
+	}
 	// Trigger skill
-	OnUsePrimarySkill.Broadcast();
+	//OnUsePrimarySkill.Broadcast();
+}
+
+void APlayerCharacter::OnDebugAction()
+{
+	OnUseDebugAction.Broadcast();
 }
 
 

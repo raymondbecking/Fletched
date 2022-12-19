@@ -31,7 +31,7 @@ void AProceduralRoom::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("Not working"));
 		return;
 	}
-	Character->OnUsePrimarySkill.AddDynamic(this, &AProceduralRoom::GenerateRoom);
+	Character->OnUseDebugAction.AddDynamic(this, &AProceduralRoom::GenerateRoom);
 }
 
 void AProceduralRoom::GenerateRoom()
