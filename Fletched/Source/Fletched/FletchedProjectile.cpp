@@ -5,6 +5,8 @@
 #include "Components/SphereComponent.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/GameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 
 AFletchedProjectile::AFletchedProjectile() 
 {
@@ -29,7 +31,8 @@ AFletchedProjectile::AFletchedProjectile()
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;
 
-	FVector InitialPos = FVector(0.f,-2.f,7.f);
+	//Offset collider to match arrow
+	FVector InitialPos = FVector(42.f,-2.f,7.f);
 	FTransform InitialTransform = FTransform();
 	InitialTransform.SetTranslation(InitialPos);
 	CollisionComp->SetRelativeTransform(InitialTransform);
@@ -93,17 +96,19 @@ void AFletchedProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor
 			this->AttachToComponent(HitCharacter->GetMesh(), FAttachmentTransformRules::KeepWorldTransform,
 			                        Hit.BoneName);
 		}
-
+		UE_LOG(LogTemp, Warning, TEXT("Try to Damage"));
 		//Damage the actor that was hit by this projectile
 		AActor* HitActor = Hit.GetActor();
-		if (HitActor == nullptr || GetInstigator() == nullptr)
+		if (HitActor == nullptr)// || GetInstigator() == nullptr)
 		{
 			return;
 		}
+		UE_LOG(LogTemp, Warning, TEXT("Creating Damage Event"));
 		const FPointDamageEvent DamageEvent(Damage, Hit, FVector::One(), nullptr);
-		if (AController* OwnerController = this->GetInstigator()->GetController(); OwnerController != nullptr)
+		if (AController* OwnerController = UGameplayStatics::GetPlayerController(GetWorld(), 0); OwnerController != nullptr)
 		{
 			HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
+			UE_LOG(LogTemp, Warning, TEXT("Damage ? %f"), Damage);
 		}
 	}
 
